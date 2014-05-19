@@ -3,50 +3,50 @@ var moment = require('moment');
 
 var getFunctions = {
   generic: function(key) {
-    return this.values[key];
+    return this._values[key];
   },
   date: function(key) {
-    if(!this.values[key]) {
-      return this.values[key];
+    if(!this._values[key]) {
+      return this._values[key];
     }
 
-    return this.values[key].format('YYYY-MM-DD');
+    return this._values[key].format('YYYY-MM-DD');
   },
   datetime: function(key) {
-    if(!this.values[key]) {
-      return this.values[key];
+    if(!this._values[key]) {
+      return this._values[key];
     }
 
-    return this.values[key].toISOString();
+    return this._values[key].toISOString();
   },
   boolean: function(key) {
-    return !!this.values[key];
+    return !!this._values[key];
   }
 };
 
 var setFunctions = {
   generic: function(key, value) {
-    return this.values[key] = value;
+    return this._values[key] = value;
   },
   date: function(key, value) {
     if(!value) {
-      return this.values[key] = value;
+      return this._values[key] = value;
     }
 
-    return this.values[key] = moment(new Date(value));
+    return this._values[key] = moment(new Date(value));
   },
   datetime: function(key, value) {
     if(!value) {
-      return this.values[key] = value;
+      return this._values[key] = value;
     }
 
-    return this.values[key] = moment(new Date(value));
+    return this._values[key] = moment(new Date(value));
   }
 };
 
 module.exports = function(schema) {
   this._primaryKeys = [];
-  this.values = {};
+  this._values = {};
   var properties = [];
 
   _.forEach(schema, function(value, key) {
@@ -67,9 +67,9 @@ module.exports = function(schema) {
     };
 
     if(value.defaultValue !== undefined) {
-      this.values[key] = value.defaultValue;
+      this._values[key] = value.defaultValue;
     } else {
-      this.values[key] = null;
+      this._values[key] = null;
     }
 
     if(value.primaryKey === true) {

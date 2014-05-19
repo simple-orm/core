@@ -1,16 +1,16 @@
 var orm = require('./index');
-var queryHelper = require('../orm/query-helper');
+var mysqlAdapter = require('simple-orm-mysql-adapter')(require('./mysql-connection'));
 var expect = require('chai').expect;
 var testModelValues = require('./test-model-values');
 var moment = require('moment');
 
 describe('instance', function() {
   beforeEach(function*(){
-    yield queryHelper.startTransaction();
+    yield mysqlAdapter.startTransaction();
   });
 
   afterEach(function*(){
-    yield queryHelper.rollbackTransaction();
+    yield mysqlAdapter.rollbackTransaction();
   });
 
   describe('status', function() {
@@ -152,7 +152,7 @@ describe('instance', function() {
     it('should be able to delete an instance', function*() {
       var model = yield orm.User.find({id: 3});
 
-      expect(yield model.delete()).to.be.true;
+      expect(yield model.remove()).to.be.true;
 
       var model = yield orm.User.find({id: 3});
 

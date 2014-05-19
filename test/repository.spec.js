@@ -1,15 +1,15 @@
 var orm = require('./index');
-var queryHelper = require('../orm/query-helper');
+var mysqlAdapter = require('simple-orm-mysql-adapter')(require('./mysql-connection'));
 var expect = require('chai').expect;
 var testModelValues = require('./test-model-values');
 
 describe('repository', function() {
   beforeEach(function*(){
-    yield queryHelper.startTransaction();
+    yield mysqlAdapter.startTransaction();
   });
 
   afterEach(function*(){
-    yield queryHelper.rollbackTransaction();
+    yield mysqlAdapter.rollbackTransaction();
   });
 
   describe('create', function() {

@@ -1,7 +1,7 @@
-var baseModel = require('../../orm/base-model');
-var baseRepository = require('../../orm/base-repository');
+var mysqlAdapter = require('simple-orm-mysql-adapter')(require('../mysql-connection'));
+var orm = require('../../orm');
 
-var basePermissionModel = Object.create(baseModel);
+var basePermissionModel = Object.create(orm.baseModel(mysqlAdapter));
 
 //add functionality to all user model instances to baseUserModel object
 
@@ -71,7 +71,7 @@ permissionModel.define('Users', {
   }
 });
 
-var permissionRepository = Object.create(baseRepository(permissionModel));
+var permissionRepository = Object.create(orm.baseRepository(permissionModel));
 
 //add functionality specific to the user repository here
 

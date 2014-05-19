@@ -1,8 +1,7 @@
 require('string-format-js');
 var _ = require('lodash');
 var bluebird = require('bluebird');
-var queryHelper = require('./query-helper');
-var objectToArray = require('./object-to-array');
+var squel = require("squel");
 
 module.exports = function(model) {
   return {
@@ -12,12 +11,25 @@ module.exports = function(model) {
       returnObject.init(data);
       return returnObject;
     },
+
     find: function(data) {
       var self = this;
       var defer = bluebird.defer();
-      var params = objectToArray(data);
+      var query = squel
+      .select()
+      .from(model._table);
 
-      queryHelper.getRow((queryHelper.buildSelectStatement(model._selectFields) + " FROM %s " + queryHelper.buildWhereStatement(data)).format(model.table), params).then(function(results) {
+      _.forEach(model._selectColumns, function(value) {
+        query.field(value);
+      });
+
+      _.forEach(data, function(value, key) {
+        query.where('%s = ?'.format(key), value);
+      });
+
+      query = query.toParam();
+
+      model._sqlAdapter.getRow(query.text, query.values).then(function(results) {
         var returnObject;
 
         if(!results) {
@@ -34,12 +46,25 @@ module.exports = function(model) {
 
       return defer.promise;
     },
+
     findAll: function(data) {
       var self = this;
       var defer = bluebird.defer();
-      var params = objectToArray(data);
+      var query = squel
+      .select()
+      .from(model._table);
 
-      queryHelper.getAll((queryHelper.buildSelectStatement(model._selectFields) + " FROM %s " + queryHelper.buildWhereStatement(data)).format(model.table), params).then(function(results) {
+      _.forEach(model._selectColumns, function(value) {
+        query.field(value);
+      });
+
+      _.forEach(data, function(value, key) {
+        query.where('%s = ?'.format(key), value);
+      });
+
+      query = query.toParam();
+
+      model._sqlAdapter.getAll(query.text, query.values).then(function(results) {
         var collection = [];
 
         if(results) {
