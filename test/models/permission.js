@@ -10,7 +10,7 @@ var permissionModel = Object.create(basePermissionModel);
 permissionModel.define('Permissions', {
   id: {
     column: 'id',
-    type: 'integer',
+    type: 'number',
     primaryKey: true,
     autoIncrement: true
   },

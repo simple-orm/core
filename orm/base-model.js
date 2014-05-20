@@ -3,9 +3,8 @@ var _ = require('lodash');
 var moment = require('moment');
 var modelInitialization = require('./model-initialization');
 var bluebird = require('bluebird');
-var squel = require("squel");
 
-var sqlDataConverters = {
+var dataConverters = {
   generic: function(value) {
     return value;
   },
@@ -28,10 +27,10 @@ var sqlDataConverters = {
   }
 };
 
-module.exports = function(sqlAdapter) {
+module.exports = function(dataAdapter) {
   return {
     _status: 'new',
-    _sqlAdapter: sqlAdapter,
+    _dataAdapter: dataAdapter,
 
     define: function(table, schema) {
       this._table = table;
@@ -54,78 +53,31 @@ module.exports = function(sqlAdapter) {
     },
 
     save: function() {
-      var self = this;
       var defer = bluebird.defer();
 
       if(this._status === 'new') {
-        var query = squel
-        .insert()
-        .into(self._table)
-        .setFields(this.getInsertSqlValues())
-        .toParam();
-      } else if(this._status === 'dirty') {
-        var query = squel
-        .update()
-        .table(self._table)
-        .setFields(this.getUpdateSqlValues())
-        .where('id = ?', [this.id])
-        .toParam();
-      } else {
-        return true;
-      }
-
-      self._sqlAdapter.runQuery(query.text, query.values).then(function(results) {
-        //set the insert id so the next select with execute properly
-        if(self._insertIdColumn && results['insertId'] != 0) {
-          self[self._insertIdColumn] = results['insertId'];
-        }
-
-        //we want to load the data from the database in order to pull values that are set by the database
-        var selectQuery = squel
-        .select()
-        .from(self._table);
-
-        _.forEach(self._selectColumns, function(value) {
-          selectQuery.field(value);
-        });
-
-        var primaryKeyData = self.getPrimaryKeyData();
-
-        _.forEach(primaryKeyData, function(value, key) {
-          selectQuery.where('%s = ?'.format(key), value)
-        });
-
-        selectQuery = selectQuery.toParam();
-
-        self._sqlAdapter.getRow(selectQuery.text, selectQuery.values).then(function(data) {
-          self.loadData(data);
-          self._status = 'loaded';
+        this._dataAdapter.insert(this).then(function() {
           defer.resolve(true);
         }, function(error) {
           defer.reject(error);
         });
-      }, function(error) {
-        defer.reject(error);
-      });
+      } else if(this._status === 'dirty') {
+        this._dataAdapter.update(this).then(function() {
+          defer.resolve(true);
+        }, function(error) {
+          defer.reject(error);
+        });
+      } else {
+        defer.resolve(true);
+      }
 
       return defer.promise;
     },
 
     remove: function() {
-      var self = this;
       var defer = bluebird.defer();
-      var primaryKeyData = this.getPrimaryKeyData();
-      var query = squel
-      .delete()
-      .from(self._table);
 
-      _.forEach(primaryKeyData, function(value, key) {
-        query.where('%s = ?'.format(key), value)
-      });
-
-      query = query.toParam();
-
-      self._sqlAdapter.runQuery(query.text, query.values).then(function(results) {
+      this._dataAdapter.remove(this).then(function() {
         defer.resolve(true);
       }, function(error) {
         defer.reject(error);
@@ -135,7 +87,13 @@ module.exports = function(sqlAdapter) {
     },
 
     toJSON: function() {
-      return this._values;
+      var json = {};
+
+      _.forEach(this._schema, function(value, key) {
+        json[key] = this[value.column];
+      }, this);
+
+      return json;
     },
 
     loadData: function(data) {
@@ -152,8 +110,8 @@ module.exports = function(sqlAdapter) {
       var sqlValues = {};
 
       _.forEach(this._schema, function(value, key) {
-        var accessorType = (value.type && sqlDataConverters[value.type]) ? value.type : 'generic';
-        sqlValues[key] = sqlDataConverters[accessorType].apply(null, [this._values[key]]);
+        var accessorType = (value.type && dataConverters[value.type]) ? value.type : 'generic';
+        sqlValues[key] = dataConverters[accessorType].apply(null, [this._values[key]]);
       }, this);
 
       return sqlValues;

@@ -1,7 +1,6 @@
 require('string-format-js');
 var _ = require('lodash');
 var bluebird = require('bluebird');
-var squel = require("squel");
 
 module.exports = function(model) {
   return {
@@ -13,33 +12,10 @@ module.exports = function(model) {
     },
 
     find: function(data) {
-      var self = this;
       var defer = bluebird.defer();
-      var query = squel
-      .select()
-      .from(model._table);
 
-      _.forEach(model._selectColumns, function(value) {
-        query.field(value);
-      });
-
-      _.forEach(data, function(value, key) {
-        query.where('%s = ?'.format(key), value);
-      });
-
-      query = query.toParam();
-
-      model._sqlAdapter.getRow(query.text, query.values).then(function(results) {
-        var returnObject;
-
-        if(!results) {
-          returnObject = null
-        } else {
-          returnObject = self.create(results);
-          returnObject._status = 'loaded';
-        }
-
-        defer.resolve(returnObject);
+      model._dataAdapter.find(model, data, this.create).then(function(results) {
+        defer.resolve(results);
       }, function(error) {
         defer.reject(error);
       });
@@ -48,34 +24,10 @@ module.exports = function(model) {
     },
 
     findAll: function(data) {
-      var self = this;
       var defer = bluebird.defer();
-      var query = squel
-      .select()
-      .from(model._table);
 
-      _.forEach(model._selectColumns, function(value) {
-        query.field(value);
-      });
-
-      _.forEach(data, function(value, key) {
-        query.where('%s = ?'.format(key), value);
-      });
-
-      query = query.toParam();
-
-      model._sqlAdapter.getAll(query.text, query.values).then(function(results) {
-        var collection = [];
-
-        if(results) {
-          _.forEach(results, function(row) {
-            var newObject = self.create(row);
-            newObject._status = 'loaded';
-            collection.push(newObject);
-          });
-        }
-
-        defer.resolve(collection);
+      model._dataAdapter.findAll(model, data, this.create).then(function(results) {
+        defer.resolve(results);
       }, function(error) {
         defer.reject(error);
       });

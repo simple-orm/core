@@ -7,17 +7,29 @@ var getFunctions = {
   },
   date: function(key) {
     if(!this._values[key]) {
-      return this._values[key];
+      return null;
     }
 
-    return this._values[key].format('YYYY-MM-DD');
+    var formattedValue = this._values[key].format('YYYY-MM-DD');
+
+    if(formattedValue === 'Invalid date') {
+      return null;
+    }
+
+    return formattedValue;
   },
   datetime: function(key) {
     if(!this._values[key]) {
-      return this._values[key];
+      return null;
     }
 
-    return this._values[key].toISOString();
+    var formattedValue = this._values[key].toISOString();
+
+    if(formattedValue === 'Invalid date') {
+      return null;
+    }
+
+    return formattedValue;
   },
   boolean: function(key) {
     return !!this._values[key];

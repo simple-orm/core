@@ -10,7 +10,7 @@ var userModel = Object.create(baseUserModel);
 userModel.define('Users', {
   id: {
     column: 'id',
-    type: 'integer',
+    type: 'number',
     primaryKey: true,
     autoIncrement: true
   },

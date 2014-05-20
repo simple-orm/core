@@ -1,6 +1,6 @@
 {
   "name": "simple-orm",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "A simple orm for node, designed for the NuclieApps project",
   "keywords": [
     "orm",
@@ -24,15 +24,14 @@
     "co": "3.0.6",
     "bluebird": "1.2.4",
     "moment": "2.6.0",
-    "string-format-js": "0.1.1",
-    "squel": "3.4.1"
+    "string-format-js": "0.1.1"
   },
   "devDependencies": {
     "mocha": "1.18.2",
     "chai": "1.9.1",
     "sinon": "1.9.1",
     "mysql": "2.2.0",
-    "simple-orm-mysql-adapter": "0.1.1"
+    "simple-orm-mysql-adapter": "0.1.2"
   },
   "engines": {
     "node": ">=0.11.10"

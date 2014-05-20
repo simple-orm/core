@@ -305,4 +305,16 @@ describe('instance', function() {
       });
     });
   });
+
+  describe('bug cases', function() {
+    it('invalid date/datetime should return as null', function*() {
+      var model = orm.User.create();
+
+      model.lastPasswordChangeDate = '0000-00-00';
+      model.createdTimestamp = '0000-00-00 00:00:00';
+
+      expect(model.lastPasswordChangeDate).to.be.null;
+      expect(model.createdTimestamp).to.be.null;
+    });
+  });
 });
