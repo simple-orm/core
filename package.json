@@ -24,7 +24,8 @@
     "co": "3.0.6",
     "bluebird": "1.2.4",
     "moment": "2.6.0",
-    "string-format-js": "0.1.1"
+    "string-format-js": "0.1.1",
+    "interface-checker": "0.1.1"
   },
   "devDependencies": {
     "mocha": "1.18.2",

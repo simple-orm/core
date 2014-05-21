@@ -3,6 +3,24 @@ var _ = require('lodash');
 var moment = require('moment');
 var modelInitialization = require('./model-initialization');
 var bluebird = require('bluebird');
+var interfaceChecker = require('interface-checker');
+
+interfaceChecker.define('SimpleOrmDataAdapter', [
+  'insert:1',
+  'update:1',
+  'remove:1',
+  'find:3',
+  'findAll:3',
+  'startTransaction',
+  'commitTransaction',
+  'rollbackTransaction'//,
+  /* since need to figure out the API for these methods
+  'getOne',
+  'getColumn',
+  'getRow',
+  'getAll',
+  'runQuery'*/
+]);
 
 var dataConverters = {
   generic: function(value) {
@@ -28,6 +46,27 @@ var dataConverters = {
 };
 
 module.exports = function(dataAdapter) {
+  var interfaceCheck = interfaceChecker.has(dataAdapter, 'SimpleOrmDataAdapter');
+
+  if(interfaceCheck !== true) {
+    var errorMessage = "The passed in data adapter has the following issue:";
+
+    if(interfaceCheck.missing) {
+      interfaceCheck.missing.forEach(function(value) {
+        errorMessage += "\nMissing %s method".format(value);
+      });
+    }
+
+    if(interfaceCheck.parameterMismatch) {
+      interfaceCheck.parameterMismatch.forEach(function(value) {
+        errorMessage += "\n" + value;
+      });
+    }
+
+    throw new Error(errorMessage);
+    return;
+  }
+
   return {
     _status: 'new',
     _dataAdapter: dataAdapter,

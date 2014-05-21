@@ -1,4 +1,4 @@
-var orm = require('./index');
+var testModels = require('./index');
 var mysqlAdapter = require('simple-orm-mysql-adapter')(require('./mysql-connection'));
 var expect = require('chai').expect;
 var testModelValues = require('./test-model-values');
@@ -14,7 +14,7 @@ describe('repository', function() {
 
   describe('create', function() {
     it('should be able create a new instance', function*() {
-      var model = orm.User.create({
+      var model = testModels.User.create({
         firstName: 'test',
         lastName: 'user',
         email: 'test.user@example.com',
@@ -40,7 +40,7 @@ describe('repository', function() {
 
   describe('data retrieval', function() {
     it('should be able find a single model', function*() {
-      var model = yield orm.User.find({firstName: 'John'});
+      var model = yield testModels.User.find({firstName: 'John'});
 
       testModelValues(model, {
         id:  1,
@@ -58,7 +58,7 @@ describe('repository', function() {
     });
 
     it('should be able find a multiple models', function*() {
-      var models = yield orm.User.findAll({firstName: 'John'});
+      var models = yield testModels.User.findAll({firstName: 'John'});
 
       testModelValues(models[0], {
         id:  1,
