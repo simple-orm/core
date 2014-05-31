@@ -57,7 +57,6 @@ var setFunctions = {
 };
 
 module.exports = function(schema) {
-  this._primaryKeys = [];
   this._values = {};
   var properties = [];
 
@@ -67,14 +66,24 @@ module.exports = function(schema) {
 
     properties[key] = {
       get: function() {
-        return getFunctions[getAccessorType].apply(this, [key]);
+        var propertyValue = getFunctions[getAccessorType].apply(this, [key]);
+
+        if(_.isFunction(value.getter)) {
+          propertyValue = value.getter(propertyValue);
+        }
+
+        return propertyValue;
       },
-      set: function(value) {
+      set: function(newValue) {
         if(this._status === 'loaded') {
           this._status = 'dirty';
         }
 
-        return setFunctions[setAccessorType].apply(this, [key, value]);
+        if(_.isFunction(value.setter)) {
+          newValue = value.setter(newValue);
+        }
+
+        return setFunctions[setAccessorType].apply(this, [key, newValue]);
       }
     };
 
@@ -82,10 +91,6 @@ module.exports = function(schema) {
       this._values[key] = value.defaultValue;
     } else {
       this._values[key] = null;
-    }
-
-    if(value.primaryKey === true) {
-      this._primaryKeys.push(key);
     }
   }, this);
 

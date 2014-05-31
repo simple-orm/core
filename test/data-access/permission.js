@@ -7,7 +7,7 @@ var basePermissionModel = Object.create(orm.baseModel(mysqlAdapter));
 
 var permissionModel = Object.create(basePermissionModel);
 
-permissionModel.define('Permissions', {
+permissionModel.define('Permission', 'Permissions', {
   id: {
     column: 'id',
     type: 'number',
@@ -24,4 +24,11 @@ var permissionRepository = Object.create(orm.baseRepository(permissionModel));
 
 //add functionality specific to the user repository here
 
-module.exports = permissionRepository;
+module.exports = {
+  repository: permissionRepository,
+  setupRelationships: function(models) {
+    permissionModel.hasMany(models.user, {
+      through: models.userPermissionMap
+    });
+  }
+};

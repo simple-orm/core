@@ -13,11 +13,11 @@
   "bugs": {
     "url": "https://github.com/simple-orm/core/issues"
   },
-  "license" : "MIT",
+  "license": "MIT",
   "author": {
-    "name" : "Ryan Zec",
-    "email" : "code@ryanzec.com",
-    "url" : "http://www.ryanzec.com"
+    "name": "Ryan Zec",
+    "email": "code@ryanzec.com",
+    "url": "http://www.ryanzec.com"
   },
   "dependencies": {
     "lodash": "2.4.1",
@@ -25,14 +25,15 @@
     "bluebird": "1.2.4",
     "moment": "2.6.0",
     "string-format-js": "0.1.1",
-    "interface-checker": "0.1.1"
+    "interface-checker": "0.1.1",
+    "string": "1.8.1"
   },
   "devDependencies": {
     "mocha": "1.18.2",
     "chai": "1.9.1",
     "sinon": "1.9.1",
     "mysql": "2.2.0",
-    "simple-orm-mysql-adapter": "0.1.2"
+    "simple-orm-mysql-adapter": "0.2.0"
   },
   "engines": {
     "node": ">=0.11.10"

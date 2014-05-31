@@ -7,7 +7,7 @@ var baseUserModel = Object.create(orm.baseModel(mysqlAdapter));
 
 var userModel = Object.create(baseUserModel);
 
-userModel.define('Users', {
+userModel.define('User', 'Users', {
   id: {
     column: 'id',
     type: 'number',
@@ -75,4 +75,13 @@ var userRepository = Object.create(orm.baseRepository(userModel));
 
 //add functionality specific to the user repository here
 
-module.exports = userRepository;
+module.exports = {
+  repository: userRepository,
+  setupRelationships: function(models) {
+    userModel.hasOne(models.userDetail);
+    userModel.hasMany(models.userEmail);
+    userModel.hasMany(models.permission, {
+      through: models.userPermissionMap
+    });
+  }
+};

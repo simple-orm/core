@@ -1,20 +1,22 @@
-var testModels = require('./index');
+var dataLayer = require('./index');
 var mysqlAdapter = require('simple-orm-mysql-adapter')(require('./mysql-connection'));
 var expect = require('chai').expect;
-var testModelValues = require('./test-model-values');
+var testUserValues = require('./test-user-values');
 
 describe('repository', function() {
   beforeEach(function*(){
+    //mysqlAdapter.enableDebug();
     yield mysqlAdapter.startTransaction();
   });
 
   afterEach(function*(){
+    mysqlAdapter.disableDebug();
     yield mysqlAdapter.rollbackTransaction();
   });
 
   describe('create', function() {
     it('should be able create a new instance', function*() {
-      var model = testModels.User.create({
+      var model = dataLayer.user.create({
         firstName: 'test',
         lastName: 'user',
         email: 'test.user@example.com',
@@ -22,7 +24,7 @@ describe('repository', function() {
         password: 'password'
       });
 
-      testModelValues(model, {
+      testUserValues(model, {
         id:  undefined,
         firstName:  'test',
         lastName:  'user',
@@ -40,9 +42,13 @@ describe('repository', function() {
 
   describe('data retrieval', function() {
     it('should be able find a single model', function*() {
-      var model = yield testModels.User.find({firstName: 'John'});
+      var model = yield dataLayer.user.find({
+        where: {
+          firstName: 'John'
+        }
+      });
 
-      testModelValues(model, {
+      testUserValues(model, {
         id:  1,
         firstName:  'John',
         lastName:  'Doe',
@@ -58,9 +64,13 @@ describe('repository', function() {
     });
 
     it('should be able find a multiple models', function*() {
-      var models = yield testModels.User.findAll({firstName: 'John'});
+      var models = yield dataLayer.user.findAll({
+        where: {
+          firstName: 'John'
+        }
+      });
 
-      testModelValues(models[0], {
+      testUserValues(models[0], {
         id:  1,
         firstName:  'John',
         lastName:  'Doe',
@@ -74,7 +84,7 @@ describe('repository', function() {
         status:  'registered'
       });
 
-      testModelValues(models[1], {
+      testUserValues(models[1], {
         id:  3,
         firstName:  'John',
         lastName:  'Doe2',
@@ -89,4 +99,85 @@ describe('repository', function() {
       });
     });
   });
+
+  describe('advance queries', function() {
+    describe('comparison types', function() {
+      it('should support single value', function*() {
+        var models = yield dataLayer.user.findAll({
+          where: {
+            id: {
+              comparison: '>',
+              value: 1
+            }
+          }
+        });
+
+        expect(models.length).to.equal(3);
+      });
+
+      it('should support multiple valued', function*() {
+        var models = yield dataLayer.user.findAll({
+          where: {
+            id: {
+              comparison: 'not in',
+              value: [
+                2,
+                4
+              ]
+            }
+          }
+        });
+
+        expect(models.length).to.equal(2);
+      });
+
+      it('should support no value', function*() {
+        var models = yield dataLayer.user.findAll({
+          where: {
+            id: {
+              comparison: 'IS NULL'
+            }
+          }
+        });
+
+        expect(models.length).to.equal(0);
+      });
+
+      it('should support between valued', function*() {
+        var models = yield dataLayer.user.findAll({
+          where: {
+            id: {
+              comparison: 'between',
+              value: [
+                2,
+                3
+              ]
+            }
+          }
+        });
+
+        expect(models.length).to.equal(2);
+      });
+    });
+
+    it('should be able to join with other models', function*() {
+      var models = yield dataLayer.user.findAll({
+        join: [{
+          repository: dataLayer.userEmail,
+          on: {
+            'Users.id': {
+              value: 'UserEmails.userId',
+              valueType: 'field'
+            },
+            'UserEmails.email': {
+              comparison: '!=',
+              value: "one@example.'com"
+            }
+          }
+        }]
+      });
+
+      expect(models.length).to.equal(4);
+    });
+  })
 });

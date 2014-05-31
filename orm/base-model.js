@@ -5,6 +5,10 @@ var modelInitialization = require('./model-initialization');
 var bluebird = require('bluebird');
 var interfaceChecker = require('interface-checker');
 
+var decapitalize = function(value) {
+  return value.substr(0, 1).toLowerCase() + value.substr(1);
+};
+
 interfaceChecker.define('SimpleOrmDataAdapter', [
   'insert:1',
   'update:1',
@@ -71,17 +75,23 @@ module.exports = function(dataAdapter) {
     _status: 'new',
     _dataAdapter: dataAdapter,
 
-    define: function(table, schema) {
+    define: function(modelName, table, schema) {
+      this._primaryKeys = [];
+      this._modelName = modelName;
       this._table = table;
       this._schema = schema;
       this._selectColumns = [];
       this._insertIdColumn;
 
-      _.forEach(this._schema, function(value) {
+      _.forEach(this._schema, function(value, key) {
         this._selectColumns.push(value.column);
 
-        if(value.primaryKey === true && value.autoIncrement === true) {
-          this._insertIdColumn = value.column;
+        if(value.primaryKey === true) {
+          this._primaryKeys.push(key);
+
+          if(value.autoIncrement === true) {
+            this._insertIdColumn = value.column;
+          }
         }
       }, this);
     },
@@ -189,6 +199,65 @@ module.exports = function(dataAdapter) {
       });
 
       return data;
+    },
+
+    belongsTo: function(repository, options) {
+      options = options || {};
+
+      this['get' + repository._model._modelName] = function() {
+        var criteria = {
+          where: {}
+        };
+
+        criteria.where['id'] = this[decapitalize(repository._model._modelName) + 'Id'];
+
+        return repository.find(criteria);
+      };
+    },
+
+    hasOne: function(repository, options) {
+      options = options || {};
+
+      this['get' + repository._model._modelName] = function() {
+        var criteria = {
+          where: {}
+        };
+
+        criteria.where[decapitalize(this._modelName) + 'Id'] = this.id;
+
+        return repository.find(criteria);
+      };
+    },
+
+    hasMany: function(repository, options) {
+      options = options || {};
+      var throughRepository = (options.through) ? options.through : null;
+
+      this['get' + repository._model._table] = function() {
+        var criteria = {};
+
+        if(throughRepository) {
+          var selfField = options.property || decapitalize(this._modelName) + 'Id';
+          var relationField = options.relationProperty || decapitalize(repository._model._modelName) + 'Id';
+          var on = {};
+
+          on[throughRepository._model._table + '.' + selfField] = this.id;
+          on[throughRepository._model._table + '.' + relationField] = {
+            value: repository._model._table + '.id',
+            valueType: 'field'
+          };
+
+          criteria.join = [{
+            repository: throughRepository,
+            on: on
+          }];
+        } else {
+          criteria.where = {};
+          criteria.where[decapitalize(this._modelName) + 'Id'] = this.id;
+        }
+
+        return repository.findAll(criteria);
+      };
     }
   };
 };

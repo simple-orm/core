@@ -4,6 +4,7 @@ var bluebird = require('bluebird');
 
 module.exports = function(model) {
   return {
+    _model: model,
     create: function(data) {
       data = data || {};
       var returnObject = Object.create(model);
@@ -11,10 +12,10 @@ module.exports = function(model) {
       return returnObject;
     },
 
-    find: function(data) {
+    find: function(criteria) {
       var defer = bluebird.defer();
 
-      model._dataAdapter.find(model, data, this.create).then(function(results) {
+      model._dataAdapter.find(model, criteria, this.create).then(function(results) {
         defer.resolve(results);
       }, function(error) {
         defer.reject(error);
@@ -23,10 +24,10 @@ module.exports = function(model) {
       return defer.promise;
     },
 
-    findAll: function(data) {
+    findAll: function(criteria) {
       var defer = bluebird.defer();
 
-      model._dataAdapter.findAll(model, data, this.create).then(function(results) {
+      model._dataAdapter.findAll(model, criteria, this.create).then(function(results) {
         defer.resolve(results);
       }, function(error) {
         defer.reject(error);
