@@ -24,7 +24,7 @@ userEmailModel.define('UserEmail', 'UserEmails', {
   }
 });
 
-var userEmailRepository = Object.create(orm.baseRepository(userEmailModel));
+var userEmailRepository = Object.create(orm.baseRepository(userEmailModel, mysqlAdapter));
 
 //add functionality specific to the user repository here
 

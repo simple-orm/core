@@ -10,6 +10,7 @@ var dataModuleFiles = [
   'user-email-custom-getter',
   'user-email-custom-setter',
   'permission',
+  'permission-hook',
   'user-permission-map'
 ];
 

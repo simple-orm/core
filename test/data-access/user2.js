@@ -71,7 +71,7 @@ userModel.define('User2', 'Users', {
   }
 });
 
-var userRepository = Object.create(orm.baseRepository(userModel));
+var userRepository = Object.create(orm.baseRepository(userModel, mysqlAdapter));
 
 //add functionality specific to the user repository here
 

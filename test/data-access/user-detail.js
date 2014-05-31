@@ -24,7 +24,7 @@ userDetailModel.define('UserDetail', 'UserDetails', {
   }
 });
 
-var userDetailRepository = Object.create(orm.baseRepository(userDetailModel));
+var userDetailRepository = Object.create(orm.baseRepository(userDetailModel, mysqlAdapter));
 
 //add functionality specific to the user repository here
 

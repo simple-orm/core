@@ -1,3 +1,4 @@
+require('string-format-js');
 var _ = require('lodash');
 var moment = require('moment');
 var EventEmitter = require('events').EventEmitter;
@@ -57,13 +58,26 @@ var setFunctions = {
   }
 };
 
-module.exports = function(schema) {
-  this._values = {};
+module.exports = function(dataAdapter) {
+  var sharedHooks = this._hooks;
+
+  this._dataAdapter = dataAdapter;
+  this._status = 'new';
   this._emitter = new EventEmitter();
   this._hooks = {};
+  this._values = {};
   var properties = [];
 
-  _.forEach(schema, function(value, key) {
+  //we need to copy the hooks that are attachable to the base model object this this instance
+  if(Object.keys(sharedHooks).length > 0) {
+    _.forEach(sharedHooks, function(hooks, name) {
+      _.forEach(hooks, function(fn, identifier) {
+        this.hook('%s[%s]'.format(name, identifier), fn)
+      }, this);
+    }, this);
+  }
+
+  _.forEach(this._schema, function(value, key) {
     var getAccessorType = (value.type && getFunctions[value.type]) ? value.type : 'generic';
     var setAccessorType = (value.type && setFunctions[value.type]) ? value.type : 'generic';
 

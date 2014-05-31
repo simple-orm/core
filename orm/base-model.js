@@ -70,9 +70,7 @@ module.exports = function(dataAdapter) {
   var baseModel = Object.create(hookable);
 
   _.extend(baseModel, {
-    _status: 'new',
-    _dataAdapter: dataAdapter,
-
+    _hooks: {},
     define: function(modelName, table, schema) {
       this._primaryKeys = [];
       this._modelName = modelName;
@@ -95,7 +93,7 @@ module.exports = function(dataAdapter) {
     },
 
     init: function(data) {
-      modelInitialization.apply(this, [this._schema]);
+      modelInitialization.apply(this, [dataAdapter]);
       this.loadData(data);
     },
 

@@ -20,7 +20,7 @@ permissionModel.define('Permission', 'Permissions', {
   }
 });
 
-var permissionRepository = Object.create(orm.baseRepository(permissionModel));
+var permissionRepository = Object.create(orm.baseRepository(permissionModel, mysqlAdapter));
 
 //add functionality specific to the user repository here
 

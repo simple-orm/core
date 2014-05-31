@@ -761,6 +761,25 @@ describe('instance', function() {
         expect(model).to.be.null;
       });
     });
+
+    it('should be attachable to the base model object and available in the model instances', function*() {
+      var model = dataLayer.permissionHook.create({
+        title: 'user.admin'
+      });
+      yield model.save();
+
+      expect(model.id).to.be.at.least(5);
+      expect(model.title).to.equal('before-user.admin');
+
+      var modelFromDatabase = yield dataLayer.permissionHook.find({
+        where: {
+          id: model.id
+        }
+      });
+
+      expect(modelFromDatabase.id).to.be.at.least(5);
+      expect(modelFromDatabase.title).to.equal('before-user.admin');
+    });
   });
 
   describe('bug cases', function() {
@@ -773,5 +792,15 @@ describe('instance', function() {
       expect(model.lastPasswordChangeDate).to.be.null;
       expect(model.createdTimestamp).to.be.null;
     });
+
+    it('each model should have it own _status', function*() {
+      var model1 = dataLayer.user.create();
+      var model2 = dataLayer.user.create();
+
+      model2._status = 'loaded';
+
+      expect(model1._status).to.equal('new');
+      expect(model2._status).to.equal('loaded');
+    })
   });
 });

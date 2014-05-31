@@ -20,7 +20,7 @@ userPermissionMapModel.define('UserPermissionMap', 'UserPermissionMap', {
   }
 });
 
-var userPermissionRepository = Object.create(orm.baseRepository(userPermissionMapModel));
+var userPermissionRepository = Object.create(orm.baseRepository(userPermissionMapModel, mysqlAdapter));
 
 //add functionality specific to the user repository here
 

@@ -4,13 +4,14 @@ var bluebird = require('bluebird');
 var EventEmitter = require('events').EventEmitter;
 var hookable = require('./hookable');
 
-module.exports = function(model) {
+module.exports = function(model, dataAdapter) {
   var baseRepository = Object.create(hookable);
 
   _.extend(baseRepository, {
     _emitter: new EventEmitter(),
     _hooks: {},
     _model: model,
+    _dataAdapter: dataAdapter,
     create: function(data) {
       data = data || {};
       var returnObject = Object.create(model);
@@ -23,7 +24,7 @@ module.exports = function(model) {
 
       this.runHooks('beforeFind', [criteria]);
 
-      model._dataAdapter.find(model, criteria, this.create).then((function(results) {
+      this._dataAdapter.find(model, criteria, this.create).then((function(results) {
         this.runHooks('afterFind', [results]);
         defer.resolve(results);
       }).bind(this), function(error) {
@@ -38,7 +39,7 @@ module.exports = function(model) {
 
       this.runHooks('beforeFindAll', [criteria]);
 
-      model._dataAdapter.findAll(model, criteria, this.create).then((function(results) {
+      this._dataAdapter.findAll(model, criteria, this.create).then((function(results) {
         this.runHooks('afterFindAll', [results]);
         defer.resolve(results);
       }).bind(this), function(error) {
