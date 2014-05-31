@@ -1,4 +1,5 @@
 var dataLayer = require('./index');
+var simpleOrm = require('../orm/index');
 var dataAdapter = require('simple-orm-mysql-adapter')(require('./mysql-connection'));
 var expect = require('chai').expect;
 var testUserValues = require('./test-user-values');
@@ -302,6 +303,24 @@ describe('repository', function() {
           status:  'registered'
         });
       });
+    });
+  });
+
+  describe('data adapter', function() {
+    it('should throw error if data adapter does not pass interface checker', function*() {
+      var err = "The passed in data adapter has the following issue:"
+      + "\nMissing insert method"
+      + "\nMissing update method"
+      + "\nMissing remove method"
+      + "\nMissing find method"
+      + "\nMissing findAll method"
+      + "\nMissing startTransaction method"
+      + "\nMissing commitTransaction method"
+      + "\nMissing rollbackTransaction method";
+
+      expect(function() {
+        simpleOrm.baseRepository({}, {});
+      }).to.throw(err);
     });
   });
 });

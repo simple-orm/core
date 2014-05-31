@@ -3,11 +3,15 @@ var orm = require('../../orm');
 
 var basePermissionModel = Object.create(orm.baseModel());
 
+basePermissionModel.hook('beforeSave[test]', function(model, saveType) {
+  model.title = 'before-' + model.title;
+});
+
 //add functionality to all user model instances to baseUserModel object
 
 var permissionModel = Object.create(basePermissionModel);
 
-permissionModel.define('Permission', 'Permissions', {
+permissionModel.define('PermissionHook', 'Permissions', {
   id: {
     column: 'id',
     type: 'number',

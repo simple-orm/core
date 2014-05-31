@@ -1,7 +1,7 @@
 var mysqlAdapter = require('simple-orm-mysql-adapter')(require('../mysql-connection'));
 var orm = require('../../orm');
 
-var baseUserEmailModel = Object.create(orm.baseModel(mysqlAdapter));
+var baseUserEmailModel = Object.create(orm.baseModel());
 
 //add functionality to all user model instances to baseUserModel object
 

@@ -1,7 +1,7 @@
 var mysqlAdapter = require('simple-orm-mysql-adapter')(require('../mysql-connection'));
 var orm = require('../../orm');
 
-var baseUserDetailModel = Object.create(orm.baseModel(mysqlAdapter));
+var baseUserDetailModel = Object.create(orm.baseModel());
 
 //add functionality to all user model instances to baseUserModel object
 
