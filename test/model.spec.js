@@ -1,19 +1,19 @@
 var dataLayer = require('./index');
 var simpleOrm = require('../orm/index');
-var mysqlAdapter = require('simple-orm-mysql-adapter')(require('./mysql-connection'));
+var dataAdapter = require('simple-orm-mysql-adapter')(require('./mysql-connection'));
 var expect = require('chai').expect;
 var testUserValues = require('./test-user-values');
 var moment = require('moment');
 
 describe('instance', function() {
   beforeEach(function*(){
-    //mysqlAdapter.enableDebug();
-    yield mysqlAdapter.startTransaction();
+    //dataAdapter.enableDebug();
+    yield dataAdapter.startTransaction();
   });
 
   afterEach(function*(){
-    mysqlAdapter.disableDebug();
-    yield mysqlAdapter.rollbackTransaction();
+    dataAdapter.disableDebug();
+    yield dataAdapter.rollbackTransaction();
   });
 
   describe('status', function() {
@@ -418,7 +418,7 @@ describe('instance', function() {
       });
     });
 
-    it('should be able to get all sql values', function*() {
+    it('should be able to get all data store values', function*() {
       var model = dataLayer.user.create({
         firstName:  'test',
         lastName:  'user',
@@ -431,7 +431,7 @@ describe('instance', function() {
         status:  'registered'
       });
 
-      expect(model.getAllSqlValues()).to.deep.equal({
+      expect(model.getDataStoreValues(dataAdapter._dataConverters)).to.deep.equal({
         id: null,
         firstName:  'test',
         lastName:  'user',
@@ -459,7 +459,7 @@ describe('instance', function() {
         status:  'registered'
       });
 
-      expect(model.getInsertSqlValues()).to.deep.equal({
+      expect(model.getInsertDataStoreValues(dataAdapter._dataConverters)).to.deep.equal({
         firstName:  'test',
         lastName:  'user',
         email:  'test.user@example.com',
@@ -484,7 +484,7 @@ describe('instance', function() {
         status:  'registered'
       });
 
-      expect(model.getUpdateSqlValues()).to.deep.equal({
+      expect(model.getUpdateDataStoreValues(dataAdapter._dataConverters)).to.deep.equal({
         firstName:  'test',
         email:  'test.user@example.com',
         username:  'test.user',

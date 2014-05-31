@@ -1,17 +1,17 @@
 var dataLayer = require('./index');
-var mysqlAdapter = require('simple-orm-mysql-adapter')(require('./mysql-connection'));
+var dataAdapter = require('simple-orm-mysql-adapter')(require('./mysql-connection'));
 var expect = require('chai').expect;
 var testUserValues = require('./test-user-values');
 
 describe('repository', function() {
   beforeEach(function*(){
-    //mysqlAdapter.enableDebug();
-    yield mysqlAdapter.startTransaction();
+    //dataAdapter.enableDebug();
+    yield dataAdapter.startTransaction();
   });
 
   afterEach(function*(){
-    mysqlAdapter.disableDebug();
-    yield mysqlAdapter.rollbackTransaction();
+    dataAdapter.disableDebug();
+    yield dataAdapter.rollbackTransaction();
   });
 
   describe('create', function() {

@@ -19,33 +19,16 @@ interfaceChecker.define('SimpleOrmDataAdapter', [
   'commitTransaction',
   'rollbackTransaction'//,
   /* since need to figure out the API for these methods
-  'getOne',
-  'getColumn',
-  'getRow',
-  'getAll',
-  'runQuery'*/
+   'getOne',
+   'getColumn',
+   'getRow',
+   'getAll',
+   'runQuery'*/
 ]);
 
-var dataConverters = {
+var defaultDataConverters = {
   generic: function(value) {
     return value;
-  },
-  boolean: function(value) {
-    return value === true ? 1 : 0;
-  },
-  date: function(value) {
-    if(!value) {
-      return null;
-    }
-
-    return value.format('YYYY-MM-DD');
-  },
-  datetime: function(value) {
-    if(!value) {
-      return null;
-    }
-
-    return value.format('YYYY-MM-DD HH:mm:ss');
   }
 };
 
@@ -55,15 +38,27 @@ module.exports = function(dataAdapter) {
   if(interfaceCheck !== true) {
     var errorMessage = "The passed in data adapter has the following issue:";
 
-    if(interfaceCheck.missing) {
-      interfaceCheck.missing.forEach(function(value) {
+    if(interfaceCheck.missingMethods) {
+      interfaceCheck.missingMethods.forEach(function(value) {
         errorMessage += "\nMissing %s method".format(value);
+      });
+    }
+
+    if(interfaceCheck.missingProperties) {
+      interfaceCheck.missingProperties.forEach(function(value) {
+        errorMessage += "\nMissing %s property".format(value);
       });
     }
 
     if(interfaceCheck.parameterMismatch) {
       interfaceCheck.parameterMismatch.forEach(function(value) {
         errorMessage += "\n" + value;
+      });
+    }
+
+    if(interfaceCheck.invalidType) {
+      _.forEach(interfaceCheck.invalidType, function(expectedPropertyType, propertyName) {
+        errorMessage += "\nExpected %s to be a %s".format(propertyName, expectedPropertyType);
       });
     }
 
@@ -155,47 +150,49 @@ module.exports = function(dataAdapter) {
       }
     },
 
-    getAllSqlValues: function() {
-      var sqlValues = {};
+    getDataStoreValues: function(dataConverters) {
+      dataConverters = dataConverters || {};
+      dataConverters = _.extend(defaultDataConverters, dataConverters);
+      var dataStoreValues = {};
 
       _.forEach(this._schema, function(value, key) {
         var accessorType = (value.type && dataConverters[value.type]) ? value.type : 'generic';
-        sqlValues[key] = dataConverters[accessorType].apply(null, [this._values[key]]);
+        dataStoreValues[key] = dataConverters[accessorType].apply(null, [this._values[key]]);
       }, this);
 
-      return sqlValues;
+      return dataStoreValues;
     },
 
-    getInsertSqlValues: function() {
-      var sqlValues = this.getAllSqlValues();
+    getInsertDataStoreValues: function(dataConverters) {
+      var dataStoreValues = this.getDataStoreValues(dataConverters);
 
       _.forEach(this._schema, function(value, key) {
         if(value.exclude === 'always' || value.exclude === 'insert' || value.autoIncrement === true) {
-          delete sqlValues[key];
+          delete dataStoreValues[key];
         }
       }, this);
 
-      return sqlValues;
+      return dataStoreValues;
     },
 
-    getUpdateSqlValues: function() {
-      var sqlValues = this.getAllSqlValues();
+    getUpdateDataStoreValues: function(dataConverters) {
+      var dataStoreValues = this.getDataStoreValues(dataConverters);
 
       _.forEach(this._schema, function(value, key) {
         if(value.exclude === 'always' || value.exclude === 'update' || value.autoIncrement === true) {
-          delete sqlValues[key];
+          delete dataStoreValues[key];
         }
       }, this);
 
-      return sqlValues;
+      return dataStoreValues;
     },
 
-    getPrimaryKeyData: function() {
-      var sqlValues = this.getAllSqlValues();
+    getPrimaryKeyData: function(dataConverters) {
+      var dataStoreValues = this.getDataStoreValues(dataConverters);
       var data = {};
 
       _.forEach(this._primaryKeys, function(value) {
-        data[value] = sqlValues[value];
+        data[value] = dataStoreValues[value];
       });
 
       return data;
