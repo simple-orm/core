@@ -70,6 +70,7 @@ describe('repository', function() {
         }
       });
 
+      expect(models.length).to.equal(2);
       testUserValues(models[0], {
         id:  1,
         firstName:  'John',
@@ -179,5 +180,128 @@ describe('repository', function() {
 
       expect(models.length).to.equal(4);
     });
-  })
+  });
+
+  describe('hooks', function() {
+    describe('types', function() {
+      it('beforeFind', function*() {
+        dataLayer.user.hook('beforeFind[test]', function(criteria) {
+          criteria.where.firstName = 'John';
+        });
+        var model = yield dataLayer.user.find({
+          where: {
+            firstName: 'Joh'
+          }
+        });
+        dataLayer.user.removeHook('beforeFind[test]');
+
+        testUserValues(model, {
+          id:  1,
+          firstName:  'John',
+          lastName:  'Doe',
+          email:  'john.doe@example.com',
+          username:  'john.doe',
+          password:  'password',
+          createdTimestamp:  '2014-05-17T19:50:15.000Z',
+          updatedTimestamp:  null,
+          lastPasswordChangeDate:  null,
+          requirePasswordChangeFlag: true,
+          status:  'registered'
+        });
+      });
+
+      it('afterFind', function*() {
+        dataLayer.user.hook('afterFind[test]', function(model) {
+          model.firstName = 'John-after';
+        });
+        var model = yield dataLayer.user.find({
+          where: {
+            firstName: 'John'
+          }
+        });
+        dataLayer.user.removeHook('afterFind[test]');
+
+        testUserValues(model, {
+          id:  1,
+          firstName:  'John-after',
+          lastName:  'Doe',
+          email:  'john.doe@example.com',
+          username:  'john.doe',
+          password:  'password',
+          createdTimestamp:  '2014-05-17T19:50:15.000Z',
+          updatedTimestamp:  null,
+          lastPasswordChangeDate:  null,
+          requirePasswordChangeFlag: true,
+          status:  'registered'
+        });
+      });
+
+      it('beforeFindAll', function*() {
+        dataLayer.user.hook('beforeFindAll[test]', function(criteria) {
+          criteria.where.firstName = 'John';
+        });
+        var models = yield dataLayer.user.findAll({
+          where: {
+            firstName: 'Joh'
+          }
+        });
+        dataLayer.user.removeHook('beforeFindAll[test]');
+
+        testUserValues(models[0], {
+          id:  1,
+          firstName:  'John',
+          lastName:  'Doe',
+          email:  'john.doe@example.com',
+          username:  'john.doe',
+          password:  'password',
+          createdTimestamp:  '2014-05-17T19:50:15.000Z',
+          updatedTimestamp:  null,
+          lastPasswordChangeDate:  null,
+          requirePasswordChangeFlag: true,
+          status:  'registered'
+        });
+
+        testUserValues(models[1], {
+          id:  3,
+          firstName:  'John',
+          lastName:  'Doe2',
+          email:  'john.doe2@example.com',
+          username:  'john.doe2',
+          password:  'password',
+          createdTimestamp:  '2014-05-17T19:51:49.000Z',
+          updatedTimestamp:  null,
+          lastPasswordChangeDate:  null,
+          requirePasswordChangeFlag: false,
+          status:  'active'
+        });
+      });
+
+      it('afterFindAll', function*() {
+        dataLayer.user.hook('afterFindAll[test]', function(models) {
+          models.splice(1, 1);
+        });
+        var models = yield dataLayer.user.findAll({
+          where: {
+            firstName: 'John'
+          }
+        });
+        dataLayer.user.removeHook('afterFindAll[test]');
+
+        expect(models.length).to.equal(1);
+        testUserValues(models[0], {
+          id:  1,
+          firstName:  'John',
+          lastName:  'Doe',
+          email:  'john.doe@example.com',
+          username:  'john.doe',
+          password:  'password',
+          createdTimestamp:  '2014-05-17T19:50:15.000Z',
+          updatedTimestamp:  null,
+          lastPasswordChangeDate:  null,
+          requirePasswordChangeFlag: true,
+          status:  'registered'
+        });
+      });
+    });
+  });
 });

@@ -4,6 +4,7 @@ var moment = require('moment');
 var modelInitialization = require('./model-initialization');
 var bluebird = require('bluebird');
 var interfaceChecker = require('interface-checker');
+var hookable = require('./hookable');
 
 var decapitalize = function(value) {
   return value.substr(0, 1).toLowerCase() + value.substr(1);
@@ -66,7 +67,9 @@ module.exports = function(dataAdapter) {
     return;
   }
 
-  return {
+  var baseModel = Object.create(hookable);
+
+  _.extend(baseModel, {
     _status: 'new',
     _dataAdapter: dataAdapter,
 
@@ -100,15 +103,19 @@ module.exports = function(dataAdapter) {
       var defer = bluebird.defer();
 
       if(this._status === 'new') {
-        this._dataAdapter.insert(this).then(function() {
+        this.runHooks('beforeSave', [this, 'insert']);
+        this._dataAdapter.insert(this).then((function() {
+          this.runHooks('afterSave', [this, 'insert']);
           defer.resolve(true);
-        }, function(error) {
+        }).bind(this), function(error) {
           defer.reject(error);
         });
       } else if(this._status === 'dirty') {
-        this._dataAdapter.update(this).then(function() {
+        this.runHooks('beforeSave', [this, 'update']);
+        this._dataAdapter.update(this).then((function() {
+          this.runHooks('afterSave', [this, 'update']);
           defer.resolve(true);
-        }, function(error) {
+        }).bind(this), function(error) {
           defer.reject(error);
         });
       } else {
@@ -121,9 +128,12 @@ module.exports = function(dataAdapter) {
     remove: function() {
       var defer = bluebird.defer();
 
-      this._dataAdapter.remove(this).then(function() {
+      this.runHooks('beforeRemove', [this]);
+
+      this._dataAdapter.remove(this).then((function() {
+        this.runHooks('afterRemove', [this]);
         defer.resolve(true);
-      }, function(error) {
+      }).bind(this), function(error) {
         defer.reject(error);
       });
 
@@ -256,5 +266,7 @@ module.exports = function(dataAdapter) {
         return repository.findAll(criteria);
       };
     }
-  };
+  });
+
+  return baseModel;
 };

@@ -1,5 +1,6 @@
 var _ = require('lodash');
 var moment = require('moment');
+var EventEmitter = require('events').EventEmitter;
 
 var getFunctions = {
   generic: function(key) {
@@ -58,6 +59,8 @@ var setFunctions = {
 
 module.exports = function(schema) {
   this._values = {};
+  this._emitter = new EventEmitter();
+  this._hooks = {};
   var properties = [];
 
   _.forEach(schema, function(value, key) {

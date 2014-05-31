@@ -1,9 +1,15 @@
 require('string-format-js');
 var _ = require('lodash');
 var bluebird = require('bluebird');
+var EventEmitter = require('events').EventEmitter;
+var hookable = require('./hookable');
 
 module.exports = function(model) {
-  return {
+  var baseRepository = Object.create(hookable);
+
+  _.extend(baseRepository, {
+    _emitter: new EventEmitter(),
+    _hooks: {},
     _model: model,
     create: function(data) {
       data = data || {};
@@ -15,9 +21,12 @@ module.exports = function(model) {
     find: function(criteria) {
       var defer = bluebird.defer();
 
-      model._dataAdapter.find(model, criteria, this.create).then(function(results) {
+      this.runHooks('beforeFind', [criteria]);
+
+      model._dataAdapter.find(model, criteria, this.create).then((function(results) {
+        this.runHooks('afterFind', [results]);
         defer.resolve(results);
-      }, function(error) {
+      }).bind(this), function(error) {
         defer.reject(error);
       });
 
@@ -27,13 +36,18 @@ module.exports = function(model) {
     findAll: function(criteria) {
       var defer = bluebird.defer();
 
-      model._dataAdapter.findAll(model, criteria, this.create).then(function(results) {
+      this.runHooks('beforeFindAll', [criteria]);
+
+      model._dataAdapter.findAll(model, criteria, this.create).then((function(results) {
+        this.runHooks('afterFindAll', [results]);
         defer.resolve(results);
-      }, function(error) {
+      }).bind(this), function(error) {
         defer.reject(error);
       });
 
       return defer.promise;
     }
-  }
+  });
+
+  return baseRepository;
 };
