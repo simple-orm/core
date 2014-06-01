@@ -72,11 +72,17 @@ module.exports = function(model, dataAdapter) {
 
     find: function(criteria) {
       var defer = bluebird.defer();
+      //making this object in order to allow the beforeFind hook to be able to easily modify the criteria data
+      var options = {
+        criteria: criteria
+      };
 
-      this.runHooks('beforeFind', [criteria]);
+      this.runHooks('beforeFind', [this, options, function(newCriteria) {
+        criteria = newCriteria;
+      }]);
 
-      this._dataAdapter.find(model, criteria, this.create).then((function(results) {
-        this.runHooks('afterFind', [results]);
+      this._dataAdapter.find(model, options.criteria, this.create).then((function(results) {
+        this.runHooks('afterFind', [this, results]);
         defer.resolve(results);
       }).bind(this), function(error) {
         defer.reject(error);
@@ -87,17 +93,29 @@ module.exports = function(model, dataAdapter) {
 
     findAll: function(criteria) {
       var defer = bluebird.defer();
+      //making this object in order to allow the beforeFindAll hook to be able to easily modify the criteria data
+      var options = {
+        criteria: criteria
+      };
 
-      this.runHooks('beforeFindAll', [criteria]);
+      this.runHooks('beforeFindAll', [this, options, function(newCriteria) {
+        criteria = newCriteria;
+      }]);
 
-      this._dataAdapter.findAll(model, criteria, this.create).then((function(results) {
-        this.runHooks('afterFindAll', [results]);
+      this._dataAdapter.findAll(model, options.criteria, this.create).then((function(results) {
+        this.runHooks('afterFindAll', [this, results]);
         defer.resolve(results);
       }).bind(this), function(error) {
         defer.reject(error);
       });
 
       return defer.promise;
+    },
+
+    plugin: function(pluginFunction, options) {
+      if(_.isFunction(pluginFunction)) {
+        pluginFunction.apply(this, [options]);
+      }
     }
   });
 

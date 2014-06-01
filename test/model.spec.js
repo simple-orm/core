@@ -1,4 +1,5 @@
 var dataLayer = require('./index');
+var simpleOrm = require('../orm/index');
 var dataAdapter = require('simple-orm-mysql-adapter')(require('./mysql-connection'));
 var expect = require('chai').expect;
 var testUserValues = require('./test-user-values');
@@ -498,248 +499,530 @@ describe('instance', function() {
 
   describe('hooks', function() {
     describe('types', function() {
-      it('beforeSave (on insert)', function*() {
-        var model = dataLayer.user.create({
-          firstName: 'test',
-          lastName: 'user',
-          email: 'test.user@example.com',
-          username: 'test.user',
-          password: 'password'
+      describe('beforeSave (on insert)', function() {
+        it('single', function*() {
+          var model = dataLayer.user.create({
+            firstName: 'test',
+            lastName: 'user',
+            email: 'test.user@example.com',
+            username: 'test.user',
+            password: 'password'
+          });
+
+          model.hook('beforeSave[test]', function(model, saveType) {
+            expect(saveType).to.equal('insert');
+            model.firstName = 'before-' + model.firstName;
+          });
+          yield model.save();
+
+          testUserValues(model, {
+            firstName:  'before-test',
+            lastName:  'user',
+            email:  'test.user@example.com',
+            username:  'test.user',
+            password:  'password',
+            updatedTimestamp:  null,
+            lastPasswordChangeDate:  null,
+            requirePasswordChangeFlag: false,
+            status:  'registered'
+          });
+
+          var modelFromDatabase = yield dataLayer.user.find({
+            where: {
+              id: model.id
+            }
+          });
+
+          testUserValues(modelFromDatabase, {
+            firstName:  'before-test',
+            lastName:  'user',
+            email:  'test.user@example.com',
+            username:  'test.user',
+            password:  'password',
+            updatedTimestamp:  null,
+            lastPasswordChangeDate:  null,
+            requirePasswordChangeFlag: false,
+            status:  'registered'
+          });
+
+          expect(modelFromDatabase.id).to.be.at.least(5);
+          expect(modelFromDatabase.createdTimestamp).to.not.be.undefined;
         });
 
-        model.hook('beforeSave[test]', function(model, saveType) {
-          expect(saveType).to.equal('insert');
-          model.firstName = 'before-' + model.firstName;
-        });
-        yield model.save();
+        it('multiple', function*() {
+          var model = dataLayer.user.create({
+            firstName: 'test',
+            lastName: 'user',
+            email: 'test.user@example.com',
+            username: 'test.user',
+            password: 'password'
+          });
 
-        testUserValues(model, {
-          firstName:  'before-test',
-          lastName:  'user',
-          email:  'test.user@example.com',
-          username:  'test.user',
-          password:  'password',
-          updatedTimestamp:  null,
-          lastPasswordChangeDate:  null,
-          requirePasswordChangeFlag: false,
-          status:  'registered'
-        });
+          model.hook('beforeSave[test]', function(model, saveType) {
+            expect(saveType).to.equal('insert');
+            model.firstName = 'before-' + model.firstName;
+          });
+          model.hook('beforeSave[test2]', function(model, saveType) {
+            expect(saveType).to.equal('insert');
+            model.firstName = 'before-' + model.firstName;
+          });
+          yield model.save();
 
-        var modelFromDatabase = yield dataLayer.user.find({
-          where: {
-            id: model.id
-          }
-        });
+          testUserValues(model, {
+            firstName:  'before-before-test',
+            lastName:  'user',
+            email:  'test.user@example.com',
+            username:  'test.user',
+            password:  'password',
+            updatedTimestamp:  null,
+            lastPasswordChangeDate:  null,
+            requirePasswordChangeFlag: false,
+            status:  'registered'
+          });
 
-        testUserValues(modelFromDatabase, {
-          firstName:  'before-test',
-          lastName:  'user',
-          email:  'test.user@example.com',
-          username:  'test.user',
-          password:  'password',
-          updatedTimestamp:  null,
-          lastPasswordChangeDate:  null,
-          requirePasswordChangeFlag: false,
-          status:  'registered'
-        });
+          var modelFromDatabase = yield dataLayer.user.find({
+            where: {
+              id: model.id
+            }
+          });
 
-        expect(modelFromDatabase.id).to.be.at.least(5);
-        expect(modelFromDatabase.createdTimestamp).to.not.be.undefined;
+          testUserValues(modelFromDatabase, {
+            firstName:  'before-before-test',
+            lastName:  'user',
+            email:  'test.user@example.com',
+            username:  'test.user',
+            password:  'password',
+            updatedTimestamp:  null,
+            lastPasswordChangeDate:  null,
+            requirePasswordChangeFlag: false,
+            status:  'registered'
+          });
+
+          expect(modelFromDatabase.id).to.be.at.least(5);
+          expect(modelFromDatabase.createdTimestamp).to.not.be.undefined;
+        });
       });
 
-      it('beforeSave (on update)', function*() {
-        var start = moment().format('X');
+      describe('beforeSave (on update)', function() {
+        it('single', function*() {
+          var start = moment().format('X');
 
-        var model = yield dataLayer.user.find({
-          where: {
-            id: 3
-          }
+          var model = yield dataLayer.user.find({
+            where: {
+              id: 3
+            }
+          });
+
+          model.requirePasswordChangeFlag = true;
+          model.hook('beforeSave[test]', function(model, saveType) {
+            expect(saveType).to.equal('update');
+            model.firstName = 'before-' + model.firstName;
+          });
+          yield model.save();
+
+          testUserValues(model, {
+            id: 3,
+            firstName:  'before-John',
+            lastName:  'Doe2',
+            email:  'john.doe2@example.com',
+            username:  'john.doe2',
+            password:  'password',
+            createdTimestamp:  '2014-05-17T19:51:49.000Z',
+            updatedTimestamp:  null,
+            lastPasswordChangeDate:  null,
+            requirePasswordChangeFlag: true,
+            status:  'active'
+          });
+
+          var modelFromDatabase = yield dataLayer.user.find({
+            where: {
+              id: model.id
+            }
+          });
+
+          testUserValues(modelFromDatabase, {
+            id: 3,
+            firstName:  'before-John',
+            lastName:  'Doe2',
+            email:  'john.doe2@example.com',
+            username:  'john.doe2',
+            password:  'password',
+            createdTimestamp:  '2014-05-17T19:51:49.000Z',
+            lastPasswordChangeDate:  null,
+            requirePasswordChangeFlag: true,
+            status:  'active'
+          });
+
+          expect(moment(modelFromDatabase.updatedTimestamp).format('X') >= start).to.be.true;
         });
 
-        model.requirePasswordChangeFlag = true;
-        model.hook('beforeSave[test]', function(model, saveType) {
-          expect(saveType).to.equal('update');
-          model.firstName = 'before-' + model.firstName;
-        });
-        yield model.save();
+        it('multiple', function*() {
+          var start = moment().format('X');
 
-        testUserValues(model, {
-          id: 3,
-          firstName:  'before-John',
-          lastName:  'Doe2',
-          email:  'john.doe2@example.com',
-          username:  'john.doe2',
-          password:  'password',
-          createdTimestamp:  '2014-05-17T19:51:49.000Z',
-          updatedTimestamp:  null,
-          lastPasswordChangeDate:  null,
-          requirePasswordChangeFlag: true,
-          status:  'active'
-        });
+          var model = yield dataLayer.user.find({
+            where: {
+              id: 3
+            }
+          });
 
-        var modelFromDatabase = yield dataLayer.user.find({
-          where: {
-            id: model.id
-          }
-        });
+          model.requirePasswordChangeFlag = true;
+          model.hook('beforeSave[test]', function(model, saveType) {
+            expect(saveType).to.equal('update');
+            model.firstName = 'before-' + model.firstName;
+          });
+          model.hook('beforeSave[test2]', function(model, saveType) {
+            expect(saveType).to.equal('update');
+            model.firstName = 'before-' + model.firstName;
+          });
+          yield model.save();
 
-        testUserValues(modelFromDatabase, {
-          id: 3,
-          firstName:  'before-John',
-          lastName:  'Doe2',
-          email:  'john.doe2@example.com',
-          username:  'john.doe2',
-          password:  'password',
-          createdTimestamp:  '2014-05-17T19:51:49.000Z',
-          lastPasswordChangeDate:  null,
-          requirePasswordChangeFlag: true,
-          status:  'active'
-        });
+          testUserValues(model, {
+            id: 3,
+            firstName:  'before-before-John',
+            lastName:  'Doe2',
+            email:  'john.doe2@example.com',
+            username:  'john.doe2',
+            password:  'password',
+            createdTimestamp:  '2014-05-17T19:51:49.000Z',
+            updatedTimestamp:  null,
+            lastPasswordChangeDate:  null,
+            requirePasswordChangeFlag: true,
+            status:  'active'
+          });
 
-        expect(moment(modelFromDatabase.updatedTimestamp).format('X') >= start).to.be.true;
+          var modelFromDatabase = yield dataLayer.user.find({
+            where: {
+              id: model.id
+            }
+          });
+
+          testUserValues(modelFromDatabase, {
+            id: 3,
+            firstName:  'before-before-John',
+            lastName:  'Doe2',
+            email:  'john.doe2@example.com',
+            username:  'john.doe2',
+            password:  'password',
+            createdTimestamp:  '2014-05-17T19:51:49.000Z',
+            lastPasswordChangeDate:  null,
+            requirePasswordChangeFlag: true,
+            status:  'active'
+          });
+
+          expect(moment(modelFromDatabase.updatedTimestamp).format('X') >= start).to.be.true;
+        });
       });
 
-      it('afterSave (on insert)', function*() {
-        var model = dataLayer.user.create({
-          firstName: 'test',
-          lastName: 'user',
-          email: 'test.user@example.com',
-          username: 'test.user',
-          password: 'password'
+      describe('afterSave (on insert)', function() {
+        it('single', function*() {
+          var model = dataLayer.user.create({
+            firstName: 'test',
+            lastName: 'user',
+            email: 'test.user@example.com',
+            username: 'test.user',
+            password: 'password'
+          });
+  
+          model.hook('afterSave[test]', function(model, saveType) {
+            expect(saveType).to.equal('insert');
+            model.firstName = 'after-' + model.firstName;
+          });
+          yield model.save();
+  
+          testUserValues(model, {
+            firstName:  'after-test',
+            lastName:  'user',
+            email:  'test.user@example.com',
+            username:  'test.user',
+            password:  'password',
+            updatedTimestamp:  null,
+            lastPasswordChangeDate:  null,
+            requirePasswordChangeFlag: false,
+            status:  'registered'
+          });
+  
+          var modelFromDatabase = yield dataLayer.user.find({
+            where: {
+              id: model.id
+            }
+          });
+  
+          testUserValues(modelFromDatabase, {
+            firstName:  'test',
+            lastName:  'user',
+            email:  'test.user@example.com',
+            username:  'test.user',
+            password:  'password',
+            updatedTimestamp:  null,
+            lastPasswordChangeDate:  null,
+            requirePasswordChangeFlag: false,
+            status:  'registered'
+          });
+  
+          expect(modelFromDatabase.id).to.be.at.least(5);
+          expect(modelFromDatabase.createdTimestamp).to.not.be.undefined;
         });
 
-        model.hook('afterSave[test]', function(model, saveType) {
-          expect(saveType).to.equal('insert');
-          model.firstName = 'after-' + model.firstName;
-        });
-        yield model.save();
+        it('multiple', function*() {
+          var model = dataLayer.user.create({
+            firstName: 'test',
+            lastName: 'user',
+            email: 'test.user@example.com',
+            username: 'test.user',
+            password: 'password'
+          });
 
-        testUserValues(model, {
-          firstName:  'after-test',
-          lastName:  'user',
-          email:  'test.user@example.com',
-          username:  'test.user',
-          password:  'password',
-          updatedTimestamp:  null,
-          lastPasswordChangeDate:  null,
-          requirePasswordChangeFlag: false,
-          status:  'registered'
-        });
+          model.hook('afterSave[test]', function(model, saveType) {
+            expect(saveType).to.equal('insert');
+            model.firstName = 'after-' + model.firstName;
+          });
+          model.hook('afterSave[test2]', function(model, saveType) {
+            expect(saveType).to.equal('insert');
+            model.firstName = 'after-' + model.firstName;
+          });
+          yield model.save();
 
-        var modelFromDatabase = yield dataLayer.user.find({
-          where: {
-            id: model.id
-          }
-        });
+          testUserValues(model, {
+            firstName:  'after-after-test',
+            lastName:  'user',
+            email:  'test.user@example.com',
+            username:  'test.user',
+            password:  'password',
+            updatedTimestamp:  null,
+            lastPasswordChangeDate:  null,
+            requirePasswordChangeFlag: false,
+            status:  'registered'
+          });
 
-        testUserValues(modelFromDatabase, {
-          firstName:  'test',
-          lastName:  'user',
-          email:  'test.user@example.com',
-          username:  'test.user',
-          password:  'password',
-          updatedTimestamp:  null,
-          lastPasswordChangeDate:  null,
-          requirePasswordChangeFlag: false,
-          status:  'registered'
-        });
+          var modelFromDatabase = yield dataLayer.user.find({
+            where: {
+              id: model.id
+            }
+          });
 
-        expect(modelFromDatabase.id).to.be.at.least(5);
-        expect(modelFromDatabase.createdTimestamp).to.not.be.undefined;
+          testUserValues(modelFromDatabase, {
+            firstName:  'test',
+            lastName:  'user',
+            email:  'test.user@example.com',
+            username:  'test.user',
+            password:  'password',
+            updatedTimestamp:  null,
+            lastPasswordChangeDate:  null,
+            requirePasswordChangeFlag: false,
+            status:  'registered'
+          });
+
+          expect(modelFromDatabase.id).to.be.at.least(5);
+          expect(modelFromDatabase.createdTimestamp).to.not.be.undefined;
+        });
       });
 
-      it('afterSave (on update)', function*() {
-        var start = moment().format('X');
+      describe('afterSave (on update)', function() {
+        it('single', function*() {
+          var start = moment().format('X');
 
-        var model = yield dataLayer.user.find({
-          where: {
-            id: 3
-          }
+          var model = yield dataLayer.user.find({
+            where: {
+              id: 3
+            }
+          });
+
+          model.requirePasswordChangeFlag = true;
+          model.hook('afterSave[test]', function(model, saveType) {
+            expect(saveType).to.equal('update');
+            model.firstName = 'after-' + model.firstName;
+          });
+          yield model.save();
+
+          testUserValues(model, {
+            id: 3,
+            firstName:  'after-John',
+            lastName:  'Doe2',
+            email:  'john.doe2@example.com',
+            username:  'john.doe2',
+            password:  'password',
+            createdTimestamp:  '2014-05-17T19:51:49.000Z',
+            updatedTimestamp:  null,
+            lastPasswordChangeDate:  null,
+            requirePasswordChangeFlag: true,
+            status:  'active'
+          });
+
+          var modelFromDatabase = yield dataLayer.user.find({
+            where: {
+              id: model.id
+            }
+          });
+
+          testUserValues(modelFromDatabase, {
+            id: 3,
+            firstName:  'John',
+            lastName:  'Doe2',
+            email:  'john.doe2@example.com',
+            username:  'john.doe2',
+            password:  'password',
+            createdTimestamp:  '2014-05-17T19:51:49.000Z',
+            lastPasswordChangeDate:  null,
+            requirePasswordChangeFlag: true,
+            status:  'active'
+          });
+
+          expect(moment(modelFromDatabase.updatedTimestamp).format('X') >= start).to.be.true;
         });
 
-        model.requirePasswordChangeFlag = true;
-        model.hook('afterSave[test]', function(model, saveType) {
-          expect(saveType).to.equal('update');
-          model.firstName = 'after-' + model.firstName;
-        });
-        yield model.save();
+        it('multiple', function*() {
+          var start = moment().format('X');
 
-        testUserValues(model, {
-          id: 3,
-          firstName:  'after-John',
-          lastName:  'Doe2',
-          email:  'john.doe2@example.com',
-          username:  'john.doe2',
-          password:  'password',
-          createdTimestamp:  '2014-05-17T19:51:49.000Z',
-          updatedTimestamp:  null,
-          lastPasswordChangeDate:  null,
-          requirePasswordChangeFlag: true,
-          status:  'active'
-        });
+          var model = yield dataLayer.user.find({
+            where: {
+              id: 3
+            }
+          });
 
-        var modelFromDatabase = yield dataLayer.user.find({
-          where: {
-            id: model.id
-          }
-        });
+          model.requirePasswordChangeFlag = true;
+          model.hook('afterSave[test]', function(model, saveType) {
+            expect(saveType).to.equal('update');
+            model.firstName = 'after-' + model.firstName;
+          });
+          model.hook('afterSave[test]', function(model, saveType) {
+            expect(saveType).to.equal('update');
+            model.firstName = 'after-' + model.firstName;
+          });
+          yield model.save();
 
-        testUserValues(modelFromDatabase, {
-          id: 3,
-          firstName:  'John',
-          lastName:  'Doe2',
-          email:  'john.doe2@example.com',
-          username:  'john.doe2',
-          password:  'password',
-          createdTimestamp:  '2014-05-17T19:51:49.000Z',
-          lastPasswordChangeDate:  null,
-          requirePasswordChangeFlag: true,
-          status:  'active'
-        });
+          testUserValues(model, {
+            id: 3,
+            firstName:  'after-after-John',
+            lastName:  'Doe2',
+            email:  'john.doe2@example.com',
+            username:  'john.doe2',
+            password:  'password',
+            createdTimestamp:  '2014-05-17T19:51:49.000Z',
+            updatedTimestamp:  null,
+            lastPasswordChangeDate:  null,
+            requirePasswordChangeFlag: true,
+            status:  'active'
+          });
 
-        expect(moment(modelFromDatabase.updatedTimestamp).format('X') >= start).to.be.true;
+          var modelFromDatabase = yield dataLayer.user.find({
+            where: {
+              id: model.id
+            }
+          });
+
+          testUserValues(modelFromDatabase, {
+            id: 3,
+            firstName:  'John',
+            lastName:  'Doe2',
+            email:  'john.doe2@example.com',
+            username:  'john.doe2',
+            password:  'password',
+            createdTimestamp:  '2014-05-17T19:51:49.000Z',
+            lastPasswordChangeDate:  null,
+            requirePasswordChangeFlag: true,
+            status:  'active'
+          });
+
+          expect(moment(modelFromDatabase.updatedTimestamp).format('X') >= start).to.be.true;
+        });
       });
 
-      it('beforeRemove', function*() {
-        var model = yield dataLayer.user.find({
-          where: {
-            id: 3
-          }
+      describe('beforeRemove', function() {
+        it('single', function*() {
+          var model = yield dataLayer.user.find({
+            where: {
+              id: 3
+            }
+          });
+  
+          model.hook('beforeRemove[test]', function(model) {
+            expect(model.id).to.equal(3);
+          });
+          expect(yield model.remove()).to.be.true;
+  
+          var model = yield dataLayer.user.find({
+            where: {
+              id: 3
+            }
+          });
+  
+          expect(model).to.be.null;
         });
 
-        model.hook('beforeRemove[test]', function(model) {
-          expect(model.id).to.equal(3);
-        });
-        expect(yield model.remove()).to.be.true;
+        it('multiple', function*() {
+          var model = yield dataLayer.user.find({
+            where: {
+              id: 3
+            }
+          });
 
-        var model = yield dataLayer.user.find({
-          where: {
-            id: 3
-          }
-        });
+          model.hook('beforeRemove[test]', function(model) {
+            expect(model.id).to.equal(3);
+            model.id = 4;
+          });
+          model.hook('beforeRemove[test2]', function(model) {
+            expect(model.id).to.equal(4);
+            model.id = 3;
+          });
+          expect(yield model.remove()).to.be.true;
 
-        expect(model).to.be.null;
+          var model = yield dataLayer.user.find({
+            where: {
+              id: 3
+            }
+          });
+
+          expect(model).to.be.null;
+        });
       });
 
-      it('afterRemove', function*() {
-        var model = yield dataLayer.user.find({
-          where: {
-            id: 3
-          }
+      describe('afterRemove', function() {
+        it('single', function*() {
+          var model = yield dataLayer.user.find({
+            where: {
+              id: 3
+            }
+          });
+
+          model.hook('afterRemove[test]', function(model) {
+            expect(model.id).to.equal(3);
+          });
+          expect(yield model.remove()).to.be.true;
+  
+          var model = yield dataLayer.user.find({
+            where: {
+              id: 3
+            }
+          });
+  
+          expect(model).to.be.null;
         });
 
-        model.hook('afterRemove[test]', function(model) {
-          expect(model.id).to.equal(3);
-        });
-        expect(yield model.remove()).to.be.true;
+        it('multiple', function*() {
+          var model = yield dataLayer.user.find({
+            where: {
+              id: 3
+            }
+          });
 
-        var model = yield dataLayer.user.find({
-          where: {
-            id: 3
-          }
-        });
+          model.hook('afterRemove[test]', function(model) {
+            expect(model.id).to.equal(3);
+            model.id = 4;
+          });
+          model.hook('afterRemove[test2]', function(model) {
+            expect(model.id).to.equal(4);
+            model.id = 3;
+          });
+          expect(yield model.remove()).to.be.true;
 
-        expect(model).to.be.null;
+          var model = yield dataLayer.user.find({
+            where: {
+              id: 3
+            }
+          });
+
+          expect(model).to.be.null;
+        });
       });
     });
 

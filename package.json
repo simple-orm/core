@@ -33,7 +33,8 @@
     "chai": "1.9.1",
     "sinon": "1.9.1",
     "mysql": "2.2.0",
-    "simple-orm-mysql-adapter": "0.2.1"
+    "simple-orm-mysql-adapter": "0.2.1",
+    "simple-orm-find-by-primary-key": "0.1.0"
   },
   "engines": {
     "node": ">=0.11.10"

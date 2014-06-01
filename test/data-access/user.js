@@ -73,6 +73,8 @@ userModel.define('User', 'Users', {
 
 var userRepository = Object.create(orm.baseRepository(userModel, mysqlAdapter));
 
+userRepository.plugin(require('simple-orm-find-by-primary-key'));
+
 //add functionality specific to the user repository here
 
 module.exports = {
