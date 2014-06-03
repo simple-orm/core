@@ -16,7 +16,12 @@ userModel.define('User', 'Users', {
   },
   firstName: {
     column: 'firstName',
-    type: 'string'
+    type: 'string',
+    validate: {
+      rangeLength: {
+        criteria: [3, 100]
+      }
+    }
   },
   lastName: {
     column: 'lastName',
@@ -25,7 +30,13 @@ userModel.define('User', 'Users', {
   },
   email: {
     column: 'email',
-    type: 'string'
+    type: 'string',
+    validate: {
+      email: {},
+      notEmpty: {
+        message: 'put something here!!!'
+      }
+    }
   },
   username: {
     column: 'username',
@@ -71,9 +82,12 @@ userModel.define('User', 'Users', {
   }
 });
 
+userModel.plugin(require('simple-orm-validate'));
+
 var userRepository = Object.create(orm.baseRepository(userModel, mysqlAdapter));
 
 userRepository.plugin(require('simple-orm-find-by-primary-key'));
+
 
 //add functionality specific to the user repository here
 

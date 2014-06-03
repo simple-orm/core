@@ -1,4 +1,4 @@
-require('string-format-js');
+require('string-format');
 var _ = require('lodash');
 var moment = require('moment');
 var modelInitialization = require('./model-initialization');
@@ -48,25 +48,44 @@ module.exports = function() {
 
     save: function() {
       var defer = bluebird.defer();
+      var abort = false;
+      var abortValue = false;
+      var abortSaveCallback = function(returnValue) {
+        abort = true;
+
+        if(returnValue) {
+          abortValue = returnValue;
+        }
+      };
 
       if(this._status === 'new') {
-        this.runHooks('beforeSave', [this, 'insert']);
-        this._dataAdapter.insert(this).then((function() {
-          this.runHooks('afterSave', [this, 'insert']);
-          defer.resolve(true);
-        }).bind(this), function(error) {
-          defer.reject(error);
-        });
+        this.runHooks('beforeSave', [this, 'insert', abortSaveCallback]);
+
+        if(abort === false) {
+          this._dataAdapter.insert(this).then((function() {
+            this.runHooks('afterSave', [this, 'insert']);
+            defer.resolve(true);
+          }).bind(this), function(error) {
+            defer.reject(error);
+          });
+        }
       } else if(this._status === 'dirty') {
-        this.runHooks('beforeSave', [this, 'update']);
-        this._dataAdapter.update(this).then((function() {
-          this.runHooks('afterSave', [this, 'update']);
-          defer.resolve(true);
-        }).bind(this), function(error) {
-          defer.reject(error);
-        });
+        this.runHooks('beforeSave', [this, 'update', abortSaveCallback]);
+
+        if(abort === false) {
+          this._dataAdapter.update(this).then((function() {
+            this.runHooks('afterSave', [this, 'update']);
+            defer.resolve(true);
+          }).bind(this), function(error) {
+            defer.reject(error);
+          });
+        }
       } else {
         defer.resolve(true);
+      }
+
+      if(abort === true) {
+        defer.resolve(abortValue);
       }
 
       return defer.promise;
@@ -212,6 +231,12 @@ module.exports = function() {
 
         return repository.findAll(criteria);
       };
+    },
+
+    plugin: function(pluginFunction, options) {
+      if(_.isFunction(pluginFunction)) {
+        pluginFunction.apply(this, [options]);
+      }
     }
   });
 

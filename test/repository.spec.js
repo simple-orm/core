@@ -241,6 +241,36 @@ describe('repository', function() {
             status:  'registered'
           });
         });
+
+        it('should abort search if hook calls the abort callback', function*() {
+          dataLayer.user.hook('beforeFind[test]', function(repository, data, abortCallback) {
+            data.criteria.where.firstName += 'n';
+            abortCallback();
+          });
+          var model = yield dataLayer.user.find({
+            where: {
+              firstName: 'Joh'
+            }
+          });
+          dataLayer.user.removeHook('beforeFind[test]');
+
+          expect(model).to.be.false;
+        });
+
+        it('should allow hook to pass back a custom value if action is aborted', function*() {
+          dataLayer.user.hook('beforeFind[test]', function(repository, data, abortCallback) {
+            data.criteria.where.firstName += 'n';
+            abortCallback('test');
+          });
+          var model = yield dataLayer.user.find({
+            where: {
+              firstName: 'Joh'
+            }
+          });
+          dataLayer.user.removeHook('beforeFind[test]');
+
+          expect(model).to.equal('test');
+        });
       });
 
       describe('afterFind', function() {
@@ -384,6 +414,36 @@ describe('repository', function() {
             requirePasswordChangeFlag: false,
             status:  'active'
           });
+        });
+
+        it('should abort search if hook calls the abort callback', function*() {
+          dataLayer.user.hook('beforeFindAll[test]', function(repository, data, abortCallback) {
+            data.criteria.where.firstName += 'n';
+            abortCallback();
+          });
+          var models = yield dataLayer.user.findAll({
+            where: {
+              firstName: 'Joh'
+            }
+          });
+          dataLayer.user.removeHook('beforeFindAll[test]');
+
+          expect(models).to.be.false;
+        });
+
+        it('should allow hook to pass back a custom value if action is aborted', function*() {
+          dataLayer.user.hook('beforeFindAll[test]', function(repository, data, abortCallback) {
+            data.criteria.where.firstName += 'n';
+            abortCallback('test');
+          });
+          var models = yield dataLayer.user.findAll({
+            where: {
+              firstName: 'Joh'
+            }
+          });
+          dataLayer.user.removeHook('beforeFindAll[test]');
+
+          expect(models).to.equal('test');
         });
       });
 

@@ -601,6 +601,53 @@ describe('instance', function() {
           expect(modelFromDatabase.id).to.be.at.least(5);
           expect(modelFromDatabase.createdTimestamp).to.not.be.undefined;
         });
+
+        it('should abort save if hook executes the abort callback', function*() {
+          var model = dataLayer.user.create({
+            firstName: 'test',
+            lastName: 'user',
+            email: 'test.user@example.com',
+            username: 'test.user',
+            password: 'password'
+          });
+
+          model.hook('beforeSave[test]', function(model, saveType, abortCallback) {
+            expect(saveType).to.equal('insert');
+            model.firstName = 'before-' + model.firstName;
+            abortCallback();
+          });
+          expect(yield model.save()).to.be.false;
+
+          testUserValues(model, {
+            firstName:  'before-test',
+            lastName:  'user',
+            email:  'test.user@example.com',
+            username:  'test.user',
+            password:  'password',
+            updatedTimestamp:  null,
+            lastPasswordChangeDate:  null,
+            requirePasswordChangeFlag: false,
+            status:  'registered'
+          });
+          expect(model.id).to.null;
+        });
+
+        it('should allow hook to pass back a custom value if action is aborted', function*() {
+          var model = dataLayer.user.create({
+            firstName: 'test',
+            lastName: 'user',
+            email: 'test.user@example.com',
+            username: 'test.user',
+            password: 'password'
+          });
+
+          model.hook('beforeSave[test]', function(model, saveType, abortCallback) {
+            expect(saveType).to.equal('insert');
+            model.firstName = 'before-' + model.firstName;
+            abortCallback('test');
+          });
+          expect(yield model.save()).to.equal('test')
+        });
       });
 
       describe('beforeSave (on update)', function() {
@@ -710,6 +757,76 @@ describe('instance', function() {
           });
 
           expect(moment(modelFromDatabase.updatedTimestamp).format('X') >= start).to.be.true;
+        });
+
+        it('should abort save if hook executes the abort callback', function*() {
+          var start = moment().format('X');
+
+          var model = yield dataLayer.user.find({
+            where: {
+              id: 3
+            }
+          });
+
+          model.requirePasswordChangeFlag = true;
+          model.hook('beforeSave[test]', function(model, saveType, abortCallback) {
+            expect(saveType).to.equal('update');
+            model.firstName = 'before-' + model.firstName;
+            abortCallback();
+          });
+          expect(yield model.save()).to.be.false;
+
+          testUserValues(model, {
+            id: 3,
+            firstName:  'before-John',
+            lastName:  'Doe2',
+            email:  'john.doe2@example.com',
+            username:  'john.doe2',
+            password:  'password',
+            createdTimestamp:  '2014-05-17T19:51:49.000Z',
+            updatedTimestamp:  null,
+            lastPasswordChangeDate:  null,
+            requirePasswordChangeFlag: true,
+            status:  'active'
+          });
+
+          var modelFromDatabase = yield dataLayer.user.find({
+            where: {
+              id: model.id
+            }
+          });
+
+          testUserValues(modelFromDatabase, {
+            id: 3,
+            firstName:  'John',
+            lastName:  'Doe2',
+            email:  'john.doe2@example.com',
+            username:  'john.doe2',
+            password:  'password',
+            createdTimestamp:  '2014-05-17T19:51:49.000Z',
+            updatedTimestamp:  null,
+            lastPasswordChangeDate:  null,
+            requirePasswordChangeFlag: false,
+            status:  'active'
+          });
+        });
+
+        it('should allow hook to pass back a custom value if action is aborted', function*() {
+          var start = moment().format('X');
+
+          var model = yield dataLayer.user.find({
+            where: {
+              id: 3
+            }
+          });
+
+          model.requirePasswordChangeFlag = true;
+          model.hook('beforeSave[test]', function(model, saveType, abortCallback) {
+            expect(saveType).to.equal('update');
+            model.firstName = 'before-' + model.firstName;
+            abortCallback('test');
+          });
+          expect(yield model.save()).to.equal('test');
         });
       });
 

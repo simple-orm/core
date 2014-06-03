@@ -1,4 +1,4 @@
-require('string-format-js');
+require('string-format');
 var _ = require('lodash');
 var bluebird = require('bluebird');
 var EventEmitter = require('events').EventEmitter;
@@ -30,13 +30,13 @@ module.exports = function(model, dataAdapter) {
 
     if(interfaceCheck.missingMethods) {
       interfaceCheck.missingMethods.forEach(function(value) {
-        errorMessage += "\nMissing %s method".format(value);
+        errorMessage += "\nMissing {0} method".format(value);
       });
     }
 
     if(interfaceCheck.missingProperties) {
       interfaceCheck.missingProperties.forEach(function(value) {
-        errorMessage += "\nMissing %s property".format(value);
+        errorMessage += "\nMissing {0} property".format(value);
       });
     }
 
@@ -48,7 +48,7 @@ module.exports = function(model, dataAdapter) {
 
     if(interfaceCheck.invalidType) {
       _.forEach(interfaceCheck.invalidType, function(expectedPropertyType, propertyName) {
-        errorMessage += "\nExpected %s to be a %s".format(propertyName, expectedPropertyType);
+        errorMessage += "\nExpected {0} to be a {1}".format(propertyName, expectedPropertyType);
       });
     }
 
@@ -72,42 +72,66 @@ module.exports = function(model, dataAdapter) {
 
     find: function(criteria) {
       var defer = bluebird.defer();
+      var abort = false;
+      var abortValue = false;
       //making this object in order to allow the beforeFind hook to be able to easily modify the criteria data
       var options = {
         criteria: criteria
       };
 
-      this.runHooks('beforeFind', [this, options, function(newCriteria) {
-        criteria = newCriteria;
+      this.runHooks('beforeFind', [this, options, function(returnValue) {
+        abort = true;
+
+        if(returnValue) {
+          abortValue = returnValue;
+        }
       }]);
 
-      this._dataAdapter.find(model, options.criteria, this.create).then((function(results) {
-        this.runHooks('afterFind', [this, results]);
-        defer.resolve(results);
-      }).bind(this), function(error) {
-        defer.reject(error);
-      });
+      if(abort === false) {
+        this._dataAdapter.find(model, options.criteria, this.create).then((function(results) {
+          this.runHooks('afterFind', [this, results]);
+          defer.resolve(results);
+        }).bind(this), function(error) {
+          defer.reject(error);
+        });
+      }
+
+      if(abort === true) {
+        defer.resolve(abortValue);
+      }
 
       return defer.promise;
     },
 
     findAll: function(criteria) {
       var defer = bluebird.defer();
+      var abort = false;
+      var abortValue = false;
       //making this object in order to allow the beforeFindAll hook to be able to easily modify the criteria data
       var options = {
         criteria: criteria
       };
 
-      this.runHooks('beforeFindAll', [this, options, function(newCriteria) {
-        criteria = newCriteria;
+      this.runHooks('beforeFindAll', [this, options, function(returnValue) {
+        abort = true;
+
+        if(returnValue) {
+          abortValue = returnValue;
+        }
       }]);
 
-      this._dataAdapter.findAll(model, options.criteria, this.create).then((function(results) {
-        this.runHooks('afterFindAll', [this, results]);
-        defer.resolve(results);
-      }).bind(this), function(error) {
-        defer.reject(error);
-      });
+      if(abort === false) {
+        this._dataAdapter.findAll(model, options.criteria, this.create).then((function(results) {
+          this.runHooks('afterFindAll', [this, results]);
+          defer.resolve(results);
+        }).bind(this), function(error) {
+          defer.reject(error);
+        });
+      }
+
+      if(abort === true) {
+        defer.resolve(abortValue);
+      }
 
       return defer.promise;
     },

@@ -1,4 +1,4 @@
-require('string-format-js');
+require('string-format');
 var _ = require('lodash');
 var moment = require('moment');
 var EventEmitter = require('events').EventEmitter;
@@ -72,7 +72,7 @@ module.exports = function(dataAdapter) {
   if(Object.keys(sharedHooks).length > 0) {
     _.forEach(sharedHooks, function(hooks, name) {
       _.forEach(hooks, function(fn, identifier) {
-        this.hook('%s[%s]'.format(name, identifier), fn)
+        this.hook('{0}[{1}]'.format(name, identifier), fn)
       }, this);
     }, this);
   }

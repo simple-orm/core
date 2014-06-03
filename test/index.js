@@ -11,7 +11,8 @@ var dataModuleFiles = [
   'user-email-custom-setter',
   'permission',
   'permission-hook',
-  'user-permission-map'
+  'user-permission-map',
+  'validate'
 ];
 
 var rawDataModules = {};
