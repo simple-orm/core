@@ -1,6 +1,6 @@
 {
   "name": "simple-orm",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "A simple orm for node, designed for the NuclieApps project",
   "keywords": [
     "orm",
