@@ -32,9 +32,6 @@ var getFunctions = {
     }
 
     return formattedValue;
-  },
-  boolean: function(key) {
-    return !!this._values[key];
   }
 };
 
@@ -55,6 +52,9 @@ var setFunctions = {
     }
 
     return this._values[key] = moment(new Date(value));
+  },
+  boolean: function(key, value) {
+    return this._values[key] = !!value;
   }
 };
 
