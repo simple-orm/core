@@ -1153,6 +1153,268 @@ describe('instance', function() {
           expect(model).to.be.null;
         });
       });
+
+      describe('beforeGetRelationship (belongsTo)', function() {
+        it('single', function*() {
+          var model = yield dataLayer.userDetail.find({
+            where: {
+              id: 1
+            }
+          });
+          model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+            expect(relationshipType).to.equal('belongsTo');
+            expect(relationshipModelName).to.equal('User');
+            abort('test');
+          });
+
+          var relationalModel = yield model.getUser();
+
+          expect(relationalModel).to.equal('test');
+        });
+
+        it('multiple', function*() {
+          var model = yield dataLayer.userDetail.find({
+            where: {
+              id: 1
+            }
+          });
+
+          model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+            expect(relationshipType).to.equal('belongsTo');
+            expect(relationshipModelName).to.equal('User');
+            abort('test');
+          });
+
+          model.hook('beforeGetRelationship[test2]', function(model, relationshipType, relationshipModelName, abort) {
+            expect(relationshipType).to.equal('belongsTo');
+            expect(relationshipModelName).to.equal('User');
+            abort('test2');
+          });
+
+          var relationalModel = yield model.getUser();
+
+          expect(relationalModel).to.equal('test2');
+        });
+      });
+
+      describe('afterGetRelationship (belongsTo)', function() {
+        it('single', function*() {
+          var model = yield dataLayer.userDetail.find({
+            where: {
+              id: 1
+            }
+          });
+          model.hook('afterGetRelationship[test]', function(model, relationshipType, relationshipModelName, relationalModel) {
+            expect(relationshipType).to.equal('belongsTo');
+            expect(relationshipModelName).to.equal('User');
+            relationalModel.firstName = 'hook';
+          });
+
+          var relationalModel = yield model.getUser();
+
+          expect(relationalModel.firstName).to.equal('hook');
+        });
+
+        it('multiple', function*() {
+          var model = yield dataLayer.userDetail.find({
+            where: {
+              id: 1
+            }
+          });
+
+          model.hook('afterGetRelationship[test]', function(model, relationshipType, relationshipModelName, relationalModel) {
+            expect(relationshipType).to.equal('belongsTo');
+            expect(relationshipModelName).to.equal('User');
+            relationalModel.firstName = 'hook';
+          });
+
+          model.hook('afterGetRelationship[test2]', function(model, relationshipType, relationshipModelName, relationalModel) {
+            expect(relationshipType).to.equal('belongsTo');
+            expect(relationshipModelName).to.equal('User');
+            relationalModel.firstName += 'hook2';
+          });
+
+          var relationalModel = yield model.getUser();
+
+          expect(relationalModel.firstName).to.equal('hookhook2');
+        });
+      });
+
+      describe('beforeGetRelationship (hasOne)', function() {
+        it('single', function*() {
+          var model = yield dataLayer.user.find({
+            where: {
+              id: 1
+            }
+          });
+
+          model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+            expect(relationshipType).to.equal('hasOne');
+            expect(relationshipModelName).to.equal('UserDetail');
+            abort('test');
+          });
+
+          var relationalModel = yield model.getUserDetail();
+
+          expect(relationalModel).to.equal('test');
+        });
+
+        it('multiple', function*() {
+          var model = yield dataLayer.user.find({
+            where: {
+              id: 1
+            }
+          });
+
+          model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+            expect(relationshipType).to.equal('hasOne');
+            expect(relationshipModelName).to.equal('UserDetail');
+            abort('test');
+          });
+
+          model.hook('beforeGetRelationship[test2]', function(model, relationshipType, relationshipModelName, abort) {
+            expect(relationshipType).to.equal('hasOne');
+            expect(relationshipModelName).to.equal('UserDetail');
+            abort('test2');
+          });
+
+          var relationalModel = yield model.getUserDetail();
+
+          expect(relationalModel).to.equal('test2');
+        });
+      });
+
+      describe('afterGetRelationship (hasOne)', function() {
+        it('single', function*() {
+          var model = yield dataLayer.user.find({
+            where: {
+              id: 1
+            }
+          });
+
+          model.hook('afterGetRelationship[test]', function(model, relationshipType, relationshipModelName, relationalModel) {
+            expect(relationshipType).to.equal('hasOne');
+            expect(relationshipModelName).to.equal('UserDetail');
+            relationalModel.details = 'hook';
+          });
+
+          var relationalModel = yield model.getUserDetail();
+
+          expect(relationalModel.details).to.equal('hook');
+        });
+
+        it('multiple', function*() {
+          var model = yield dataLayer.user.find({
+            where: {
+              id: 1
+            }
+          });
+
+          model.hook('afterGetRelationship[test]', function(model, relationshipType, relationshipModelName, relationalModel) {
+            expect(relationshipType).to.equal('hasOne');
+            expect(relationshipModelName).to.equal('UserDetail');
+            relationalModel.details = 'hook';
+          });
+
+          model.hook('afterGetRelationship[test2]', function(model, relationshipType, relationshipModelName, relationalModel) {
+            expect(relationshipType).to.equal('hasOne');
+            expect(relationshipModelName).to.equal('UserDetail');
+            relationalModel.details += 'hook2';
+          });
+
+          var relationalModel = yield model.getUserDetail();
+
+          expect(relationalModel.details).to.equal('hookhook2');
+        });
+      });
+
+      describe('beforeGetRelationship (hasMany)', function() {
+        it('single', function*() {
+          var model = yield dataLayer.user.find({
+            where: {
+              id: 1
+            }
+          });
+
+          model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+            expect(relationshipType).to.equal('hasMany');
+            expect(relationshipModelName).to.equal('UserEmail');
+            abort('test');
+          });
+
+          var relationalModels = yield model.getUserEmails();
+
+          expect(relationalModels).to.equal('test');
+        });
+
+        it('multiple', function*() {
+          var model = yield dataLayer.user.find({
+            where: {
+              id: 1
+            }
+          });
+
+          model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+            expect(relationshipType).to.equal('hasMany');
+            expect(relationshipModelName).to.equal('UserEmail');
+            abort('test');
+          });
+
+          model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+            expect(relationshipType).to.equal('hasMany');
+            expect(relationshipModelName).to.equal('UserEmail');
+            abort('test2');
+          });
+
+          var relationalModels = yield model.getUserEmails();
+
+          expect(relationalModels).to.equal('test2');
+        });
+      });
+
+      describe('afterGetRelationship (hasMany)', function() {
+        it('single', function*() {
+          var model = yield dataLayer.user.find({
+            where: {
+              id: 1
+            }
+          });
+
+          model.hook('afterGetRelationship[test]', function(model, relationshipType, relationshipModelName, relationalModels) {
+            expect(relationshipType).to.equal('hasMany');
+            expect(relationshipModelName).to.equal('UserEmail');
+            relationalModels[0].email = 'hook';
+          });
+
+          var relationalModels = yield model.getUserEmails();
+
+          expect(relationalModels[0].email).to.equal('hook');
+        });
+
+        it('multiple', function*() {
+          var model = yield dataLayer.user.find({
+            where: {
+              id: 1
+            }
+          });
+
+          model.hook('afterGetRelationship[test]', function(model, relationshipType, relationshipModelName, relationalModels) {
+            expect(relationshipType).to.equal('hasMany');
+            expect(relationshipModelName).to.equal('UserEmail');
+            relationalModels[0].email = 'hook';
+          });
+
+          model.hook('afterGetRelationship[test]', function(model, relationshipType, relationshipModelName, relationalModels) {
+            expect(relationshipType).to.equal('hasMany');
+            expect(relationshipModelName).to.equal('UserEmail');
+            relationalModels[0].email += 'hook2';
+          });
+
+          var relationalModels = yield model.getUserEmails();
+
+          expect(relationalModels[0].email).to.equal('hookhook2');
+        });
+      });
     });
 
     it('should be attachable to the base model object and available in the model instances', function*() {

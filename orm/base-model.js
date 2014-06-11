@@ -178,20 +178,45 @@ module.exports = function() {
       options = options || {};
 
       this['get' + repository._model._modelName] = function() {
-        //this adds support for relationships that are nullable
-        if(!this[decapitalize(repository._model._modelName) + 'Id']) {
-          var defer = bluebird.defer();
-          defer.resolve(null);
-          return defer.promise;
-        }
+        var defer = bluebird.defer();
+        var abort = false;
+        var abortValue = false;
+        var abortSaveCallback = function(returnValue) {
+          abort = true;
 
-        var criteria = {
-          where: {}
+          if(returnValue) {
+            abortValue = returnValue;
+          }
         };
 
-        criteria.where['id'] = this[decapitalize(repository._model._modelName) + 'Id'];
+        this.runHooks('beforeGetRelationship', [this, 'belongsTo', repository._model._modelName, abortSaveCallback])
 
-        return repository.find(criteria);
+        if(abort === false) {
+          //this adds support for relationships that are nullable
+          if(!this[decapitalize(repository._model._modelName) + 'Id']) {
+          defer.resolve(null);
+            return defer.promise;
+          }
+
+          var criteria = {
+            where: {}
+          };
+
+          criteria.where['id'] = this[decapitalize(repository._model._modelName) + 'Id'];
+
+          repository.find(criteria).then((function(results) {
+            this.runHooks('afterGetRelationship', [this, 'belongsTo', repository._model._modelName, results]);
+            defer.resolve(results);
+          }).bind(this), function(error) {
+            defer.reject(error);
+          });
+        }
+
+        if(abort === true) {
+          defer.resolve(abortValue);
+        }
+
+        return defer.promise;
       };
     },
 
@@ -199,13 +224,39 @@ module.exports = function() {
       options = options || {};
 
       this['get' + repository._model._modelName] = function() {
-        var criteria = {
-          where: {}
+        var defer = bluebird.defer();
+        var abort = false;
+        var abortValue = false;
+        var abortSaveCallback = function(returnValue) {
+          abort = true;
+
+          if(returnValue) {
+            abortValue = returnValue;
+          }
         };
 
-        criteria.where[decapitalize(this._modelName) + 'Id'] = this.id;
+        this.runHooks('beforeGetRelationship', [this, 'hasOne', repository._model._modelName, abortSaveCallback]);
 
-        return repository.find(criteria);
+        if(abort === false) {
+          var criteria = {
+            where: {}
+          };
+
+          criteria.where[decapitalize(this._modelName) + 'Id'] = this.id;
+
+          repository.find(criteria).then((function(results) {
+            this.runHooks('afterGetRelationship', [this, 'hasOne', repository._model._modelName, results]);
+            defer.resolve(results);
+          }).bind(this), function(error) {
+            defer.reject(error);
+          });
+        }
+
+        if(abort === true) {
+          defer.resolve(abortValue);
+        }
+
+        return defer.promise;
       };
     },
 
@@ -214,29 +265,55 @@ module.exports = function() {
       var throughRepository = (options.through) ? options.through : null;
 
       this['get' + repository._model._table] = function() {
-        var criteria = {};
+        var defer = bluebird.defer();
+        var abort = false;
+        var abortValue = false;
+        var abortSaveCallback = function(returnValue) {
+          abort = true;
 
-        if(throughRepository) {
-          var selfField = options.property || decapitalize(this._modelName) + 'Id';
-          var relationField = options.relationProperty || decapitalize(repository._model._modelName) + 'Id';
-          var on = {};
+          if(returnValue) {
+            abortValue = returnValue;
+          }
+        };
 
-          on[throughRepository._model._table + '.' + selfField] = this.id;
-          on[throughRepository._model._table + '.' + relationField] = {
-            value: repository._model._table + '.id',
-            valueType: 'field'
-          };
+        this.runHooks('beforeGetRelationship', [this, 'hasMany', repository._model._modelName, abortSaveCallback]);
 
-          criteria.join = [{
-            repository: throughRepository,
-            on: on
-          }];
-        } else {
-          criteria.where = {};
-          criteria.where[decapitalize(this._modelName) + 'Id'] = this.id;
+        if(abort === false) {
+          var criteria = {};
+
+          if(throughRepository) {
+            var selfField = options.property || decapitalize(this._modelName) + 'Id';
+            var relationField = options.relationProperty || decapitalize(repository._model._modelName) + 'Id';
+            var on = {};
+
+            on[throughRepository._model._table + '.' + selfField] = this.id;
+            on[throughRepository._model._table + '.' + relationField] = {
+              value: repository._model._table + '.id',
+              valueType: 'field'
+            };
+
+            criteria.join = [{
+              repository: throughRepository,
+              on: on
+            }];
+          } else {
+            criteria.where = {};
+            criteria.where[decapitalize(this._modelName) + 'Id'] = this.id;
+          }
+
+          repository.findAll(criteria).then((function(results) {
+            this.runHooks('afterGetRelationship', [this, 'hasMany', repository._model._modelName, results]);
+            defer.resolve(results);
+          }).bind(this), function(error) {
+            defer.reject(error);
+          });
         }
 
-        return repository.findAll(criteria);
+        if(abort === true) {
+          defer.resolve(abortValue);
+        }
+
+        return defer.promise;
       };
     },
 

@@ -32,10 +32,12 @@
     "mocha": "1.18.2",
     "chai": "1.9.1",
     "sinon": "1.9.1",
+    "sinon-chai": "2.5.0",
     "mysql": "2.2.0",
     "simple-orm-mysql-adapter": "git://github.com/simple-orm/mysql-adapter.git#master",
-    "simple-orm-find-by-primary-key": "0.1.0",
-    "simple-orm-validate": "0.1.0"
+    "simple-orm-relationship-memory-cache": "git://github.com/simple-orm/relationship-memory-cache.git#master",
+    "simple-orm-find-by-primary-key": "git://github.com/simple-orm/find-by-primary-key.git#master",
+    "simple-orm-validate": "git://github.com/simple-orm/validate.git#master"
   },
   "engines": {
     "node": ">=0.11.10"
