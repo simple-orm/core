@@ -178,6 +178,13 @@ module.exports = function() {
       options = options || {};
 
       this['get' + repository._model._modelName] = function() {
+        //this adds support for relationships that are nullable
+        if(!this[decapitalize(repository._model._modelName) + 'Id']) {
+          var defer = bluebird.defer();
+          defer.resolve(null);
+          return defer.promise;
+        }
+
         var criteria = {
           where: {}
         };

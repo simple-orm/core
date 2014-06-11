@@ -345,6 +345,18 @@ describe('instance', function() {
       expect(relationalModels[3].id).to.equal(4);
       expect(relationalModels[3].title).to.equal('user.delete');
     });
+
+    it('should return null is a belongsTo does not link anyone (basically a "can belong to" type relationship)', function*() {
+      var model = yield dataLayer.userDetail.find({
+        where: {
+          id: 5
+        }
+      });
+
+      var relationalModel = yield model.getUser();
+
+      expect(relationalModel).to.be.null;
+    });
   });
 
   describe('utilities', function() {
@@ -839,13 +851,13 @@ describe('instance', function() {
             username: 'test.user',
             password: 'password'
           });
-  
+
           model.hook('afterSave[test]', function(model, saveType) {
             expect(saveType).to.equal('insert');
             model.firstName = 'after-' + model.firstName;
           });
           yield model.save();
-  
+
           testUserValues(model, {
             firstName:  'after-test',
             lastName:  'user',
@@ -857,13 +869,13 @@ describe('instance', function() {
             requirePasswordChangeFlag: false,
             status:  'registered'
           });
-  
+
           var modelFromDatabase = yield dataLayer.user.find({
             where: {
               id: model.id
             }
           });
-  
+
           testUserValues(modelFromDatabase, {
             firstName:  'test',
             lastName:  'user',
@@ -875,7 +887,7 @@ describe('instance', function() {
             requirePasswordChangeFlag: false,
             status:  'registered'
           });
-  
+
           expect(modelFromDatabase.id).to.be.at.least(5);
           expect(modelFromDatabase.createdTimestamp).to.not.be.undefined;
         });
@@ -1051,18 +1063,18 @@ describe('instance', function() {
               id: 3
             }
           });
-  
+
           model.hook('beforeRemove[test]', function(model) {
             expect(model.id).to.equal(3);
           });
           expect(yield model.remove()).to.be.true;
-  
+
           var model = yield dataLayer.user.find({
             where: {
               id: 3
             }
           });
-  
+
           expect(model).to.be.null;
         });
 
@@ -1105,13 +1117,13 @@ describe('instance', function() {
             expect(model.id).to.equal(3);
           });
           expect(yield model.remove()).to.be.true;
-  
+
           var model = yield dataLayer.user.find({
             where: {
               id: 3
             }
           });
-  
+
           expect(model).to.be.null;
         });
 

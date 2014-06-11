@@ -33,7 +33,7 @@
     "chai": "1.9.1",
     "sinon": "1.9.1",
     "mysql": "2.2.0",
-    "simple-orm-mysql-adapter": "0.2.2",
+    "simple-orm-mysql-adapter": "git://github.com/simple-orm/mysql-adapter.git#master",
     "simple-orm-find-by-primary-key": "0.1.0",
     "simple-orm-validate": "0.1.0"
   },
