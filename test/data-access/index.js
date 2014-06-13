@@ -6,7 +6,9 @@ var dataModuleFiles = [
   'user',
   'user2',
   'user-detail',
+  'user-detail-test1',
   'user-email',
+  'user-email-test1',
   'user-email-custom-getter',
   'user-email-custom-setter',
   'permission',
@@ -20,7 +22,7 @@ var repositories = {};
 
 dataModuleFiles.forEach(function(value) {
   var modelName = S(value).camelize().s;
-  rawDataModules[modelName] = require('./data-access/' + value);
+  rawDataModules[modelName] = require('./repositories/' + value);
 
   repositories[modelName] = rawDataModules[modelName].repository;
 });

@@ -1,13 +1,9 @@
-var mysqlAdapter = require('simple-orm-mysql-adapter')(require('../mysql-connection'));
-var orm = require('../../orm');
+var mysqlAdapter = require('simple-orm-mysql-adapter')(require('../../mysql-connection'));
+var orm = require('../../../orm');
 
-var baseValidateModel = Object.create(orm.baseModel());
+var model = Object.create(orm.baseModel());
 
-//add functionality to all user model instances to baseUserModel object
-
-var validateModel = Object.create(baseValidateModel);
-
-validateModel.define('Validate', 'Validate', {
+model.define('Validate', 'OrmTest', 'Validate', {
   id: {
     column: 'id',
     type: 'number',
@@ -93,14 +89,12 @@ validateModel.define('Validate', 'Validate', {
   }
 });
 
-validateModel.plugin(require('simple-orm-validate'));
+model.plugin(require('simple-orm-validate'));
 
-var validateRepository = Object.create(orm.baseRepository(validateModel, mysqlAdapter));
+var repository = Object.create(orm.baseRepository(model, mysqlAdapter));
 
-validateRepository.plugin(require('simple-orm-find-by-primary-key'));
-
-//add functionality specific to the user repository here
+repository.plugin(require('simple-orm-find-by-primary-key'));
 
 module.exports = {
-  repository: validateRepository,
+  repository: repository,
 };

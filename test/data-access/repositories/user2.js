@@ -1,13 +1,9 @@
-var mysqlAdapter = require('simple-orm-mysql-adapter')(require('../mysql-connection'));
-var orm = require('../../orm');
+var mysqlAdapter = require('simple-orm-mysql-adapter')(require('../../mysql-connection'));
+var orm = require('../../../orm');
 
-var baseUserModel = Object.create(orm.baseModel());
+var model = Object.create(orm.baseModel());
 
-//add functionality to all user model instances to baseUserModel object
-
-var userModel = Object.create(baseUserModel);
-
-userModel.define('User', 'Users', {
+model.define('User2', 'OrmTest', 'Users', {
   id: {
     column: 'id',
     type: 'number',
@@ -82,22 +78,21 @@ userModel.define('User', 'Users', {
   }
 });
 
-userModel.plugin(require('simple-orm-validate'));
+model.plugin(require('simple-orm-validate'));
 
-var userRepository = Object.create(orm.baseRepository(userModel, mysqlAdapter));
+var repository = Object.create(orm.baseRepository(model, mysqlAdapter));
 
-userRepository.plugin(require('simple-orm-find-by-primary-key'));
-
-
-//add functionality specific to the user repository here
+repository.plugin(require('simple-orm-find-by-primary-key'));
 
 module.exports = {
-  repository: userRepository,
-  setupRelationships: function(models) {
-    userModel.hasOne(models.userDetail);
-    userModel.hasMany(models.userEmail);
-    userModel.hasMany(models.permission, {
-      through: models.userPermissionMap
+  repository: repository,
+  setupRelationships: function(repositories) {
+    model.hasOne(repositories.userDetail);
+    model.hasMany(repositories.userEmail);
+    model.hasMany(repositories.permission, {
+      through: repositories.userPermissionMap,
+      property: 'userId',
+      relationProperty: 'permissionId'
     });
   }
 };

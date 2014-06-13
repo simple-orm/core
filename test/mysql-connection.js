@@ -6,7 +6,6 @@ module.exports = {
     host: configuration.host,
     user: configuration.username,
     password: configuration.password,
-    port: configuration.port,
-    database: configuration.database
+    port: configuration.port
   })
 };

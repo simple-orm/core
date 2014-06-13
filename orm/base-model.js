@@ -20,22 +20,25 @@ module.exports = function() {
 
   _.extend(baseModel, {
     _hooks: {},
-    define: function(modelName, table, schema) {
-      this._primaryKeys = [];
+    _relationships: {},
+    define: function(modelName, database, table, schema) {
+      this._primaryKeys = {};
       this._modelName = modelName;
       this._table = table;
+      this._database = database;
       this._schema = schema;
-      this._selectColumns = [];
-      this._insertIdColumn;
+      this._selectColumns = {};
+      this._insertIdProperty;
 
       _.forEach(this._schema, function(value, key) {
-        this._selectColumns.push(value.column);
+        //this._selectColumns.push(value.column);
+        this._selectColumns[value.column] = key;
 
         if(value.primaryKey === true) {
-          this._primaryKeys.push(key);
+          this._primaryKeys[value.column] = key;
 
           if(value.autoIncrement === true) {
-            this._insertIdColumn = value.column;
+            this._insertIdProperty = key;
           }
         }
       }, this);
@@ -110,17 +113,90 @@ module.exports = function() {
       var json = {};
 
       _.forEach(this._schema, function(value, key) {
-        json[key] = this[value.column];
+        json[key] = this[key];
       }, this);
 
       return json;
     },
 
+    toJSONWithRelationships: function(relationships) {
+      var json = this.toJSON();
+      var defer = bluebird.defer();
+
+      //figure out what relationships need to be parsed
+      if(_.isArray(relationships) && relationships.length > 1) {
+        var relationshipsToParse = {};
+
+        _.forEach(this._relationships, function(data, modelName) {
+          if(relationships.indexOf(modelName) !== -1) {
+            relationshipsToParse[modelName] = data;
+          }
+        })
+      } else {
+        var relationshipsToParse = this._relationships;
+      }
+
+      var callsLeft = Object.keys(relationshipsToParse).length;
+
+      _.forEach(relationshipsToParse, function(options) {
+        var nameToParse = options.options.as;
+        var relationshipName = nameToParse.substr(0, 1).toLowerCase() + nameToParse.substr(1);
+
+        this[options.functionCall]().then(function(results) {
+          //usng this weird syntax in order to make sure arrays of models are properly serialized=
+          var relationshipJson = JSON.parse(JSON.stringify(results));
+
+          if(_.isArray(options.options.jsonProperties) && options.options.jsonProperties.length > 0) {
+            var parsedData = _.isArray(relationshipJson) ? [] : {};
+
+            if(options.options.jsonProperties.length === 1) {
+              if(_.isArray(relationshipJson)) {
+                relationshipJson.forEach(function(modelJson) {
+                  parsedData.push(modelJson[options.options.jsonProperties[0]]);
+                });
+              } else {
+                parsedData = relationshipJson[options.options.jsonProperties[0]];
+              }
+            } else {
+              if(_.isArray(relationshipJson)) {
+                relationshipJson.forEach(function(modelJson) {
+                  var parsedModel = {};
+
+                  options.options.jsonProperties.forEach(function(property) {
+                    parsedModel[property] = modelJson[property];
+                  });
+
+                  parsedData.push(parsedModel);
+                });
+              } else {
+                options.options.jsonProperties.forEach(function(property) {
+                  parsedData[property] = relationshipJson[property];
+                });
+              }
+            }
+
+            relationshipJson = parsedData;
+          }
+
+          json[relationshipName] = relationshipJson;
+          callsLeft -= 1;
+
+          if(callsLeft === 0) {
+            defer.resolve(json);
+          }
+        }, function(error) {
+          defer.reject(error);
+        });
+      }, this);
+
+      return defer.promise;
+    },
+
     loadData: function(data) {
       if(data && _.isObject(data)) {
         _.forEach(this._schema, function(value, key) {
-          if(data[key] !== undefined) {
-            this[key] = data[key];
+          if(data[value.column] !== undefined) {
+            this[key] = data[value.column];
           }
         }, this);
       }
@@ -133,7 +209,7 @@ module.exports = function() {
 
       _.forEach(this._schema, function(value, key) {
         var accessorType = (value.type && dataConverters[value.type]) ? value.type : 'generic';
-        dataStoreValues[key] = dataConverters[accessorType].apply(null, [this._values[key]]);
+        dataStoreValues[value.column] = dataConverters[accessorType].apply(null, [this._values[key]]);
       }, this);
 
       return dataStoreValues;
@@ -144,7 +220,7 @@ module.exports = function() {
 
       _.forEach(this._schema, function(value, key) {
         if(value.exclude === 'always' || value.exclude === 'insert' || value.autoIncrement === true) {
-          delete dataStoreValues[key];
+          delete dataStoreValues[value.column];
         }
       }, this);
 
@@ -156,7 +232,7 @@ module.exports = function() {
 
       _.forEach(this._schema, function(value, key) {
         if(value.exclude === 'always' || value.exclude === 'update' || value.autoIncrement === true) {
-          delete dataStoreValues[key];
+          delete dataStoreValues[value.column];
         }
       }, this);
 
@@ -167,8 +243,8 @@ module.exports = function() {
       var dataStoreValues = this.getDataStoreValues(dataConverters);
       var data = {};
 
-      _.forEach(this._primaryKeys, function(value) {
-        data[value] = dataStoreValues[value];
+      _.forEach(this._primaryKeys, function(value, key) {
+        data[key] = dataStoreValues[key];
       });
 
       return data;
@@ -177,7 +253,17 @@ module.exports = function() {
     belongsTo: function(repository, options) {
       options = options || {};
 
-      this['get' + repository._model._modelName] = function() {
+      if(!options.as) {
+        options.as = repository._model._modelName
+      };
+
+      var functionName = 'get' + options.as;
+      this._relationships[options.as] = {
+        functionCall: functionName,
+        options: options
+      };
+
+      this[functionName] = function() {
         var defer = bluebird.defer();
         var abort = false;
         var abortValue = false;
@@ -188,13 +274,14 @@ module.exports = function() {
             abortValue = returnValue;
           }
         };
+        var valueField = options.relationProperty || decapitalize(repository._model._modelName) + 'Id';
 
         this.runHooks('beforeGetRelationship', [this, 'belongsTo', repository._model._modelName, abortSaveCallback])
 
         if(abort === false) {
           //this adds support for relationships that are nullable
-          if(!this[decapitalize(repository._model._modelName) + 'Id']) {
-          defer.resolve(null);
+          if(!this[valueField]) {
+            defer.resolve(null);
             return defer.promise;
           }
 
@@ -202,7 +289,7 @@ module.exports = function() {
             where: {}
           };
 
-          criteria.where['id'] = this[decapitalize(repository._model._modelName) + 'Id'];
+          criteria.where['id'] = this[valueField];
 
           repository.find(criteria).then((function(results) {
             this.runHooks('afterGetRelationship', [this, 'belongsTo', repository._model._modelName, results]);
@@ -223,7 +310,17 @@ module.exports = function() {
     hasOne: function(repository, options) {
       options = options || {};
 
-      this['get' + repository._model._modelName] = function() {
+      if(!options.as) {
+        options.as = repository._model._modelName
+      };
+
+      var functionName = 'get' + options.as;
+      this._relationships[options.as] = {
+        functionCall: functionName,
+        options: options
+      };
+
+      this[functionName] = function() {
         var defer = bluebird.defer();
         var abort = false;
         var abortValue = false;
@@ -234,6 +331,7 @@ module.exports = function() {
             abortValue = returnValue;
           }
         };
+        var valueField = options.property || decapitalize(this._modelName) + 'Id';
 
         this.runHooks('beforeGetRelationship', [this, 'hasOne', repository._model._modelName, abortSaveCallback]);
 
@@ -242,7 +340,7 @@ module.exports = function() {
             where: {}
           };
 
-          criteria.where[decapitalize(this._modelName) + 'Id'] = this.id;
+          criteria.where[valueField] = this.id;
 
           repository.find(criteria).then((function(results) {
             this.runHooks('afterGetRelationship', [this, 'hasOne', repository._model._modelName, results]);
@@ -262,9 +360,19 @@ module.exports = function() {
 
     hasMany: function(repository, options) {
       options = options || {};
-      var throughRepository = (options.through) ? options.through : null;
 
-      this['get' + repository._model._table] = function() {
+      if(!options.as) {
+        options.as = repository._model._table
+      };
+
+      var functionName = 'get' + options.as;
+      var throughRepository = (options.through) ? options.through : null;
+      this._relationships[options.as] = {
+        functionCall: functionName,
+        options: options
+      };
+
+      this[functionName] = function() {
         var defer = bluebird.defer();
         var abort = false;
         var abortValue = false;
@@ -280,15 +388,15 @@ module.exports = function() {
 
         if(abort === false) {
           var criteria = {};
+          var selfField = options.property || decapitalize(this._modelName) + 'Id';
 
           if(throughRepository) {
-            var selfField = options.property || decapitalize(this._modelName) + 'Id';
             var relationField = options.relationProperty || decapitalize(repository._model._modelName) + 'Id';
             var on = {};
 
             on[throughRepository._model._table + '.' + selfField] = this.id;
             on[throughRepository._model._table + '.' + relationField] = {
-              value: repository._model._table + '.id',
+              value: repository._model._table + '.' + Object.keys(repository._model._primaryKeys)[0],
               valueType: 'field'
             };
 
@@ -298,7 +406,7 @@ module.exports = function() {
             }];
           } else {
             criteria.where = {};
-            criteria.where[decapitalize(this._modelName) + 'Id'] = this.id;
+            criteria.where[selfField] = this.id;
           }
 
           repository.findAll(criteria).then((function(results) {
