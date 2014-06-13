@@ -1,7 +1,7 @@
 {
   "name": "simple-orm",
-  "version": "0.3.0",
-  "description": "A simple orm for node, designed for the NuclieApps project",
+  "version": "0.4.0",
+  "description": "A simple orm for NodeJS",
   "keywords": [
     "orm",
     "mysql"
