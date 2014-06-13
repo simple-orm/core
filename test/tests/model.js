@@ -441,6 +441,34 @@ module.exports = function(dataLayer, dataAdapter) {
           ]
         });
       });
+
+      it('should be able to convert to JSON with 1 specific relationship data', function*() {
+        var where = {};
+        where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+        var model = yield dataLayer.user.find({
+          where: where
+        });
+        expect(yield model.toJSONWithRelationships([
+          'UserDetail'
+        ])).to.deep.equal({
+          id: 1,
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john.doe@example.com',
+          username: 'john.doe',
+          password: 'password',
+          createdTimestamp: "2014-05-17T19:50:15.000Z",
+          updatedTimestamp: null,
+          lastPasswordChangeDate: null,
+          requirePasswordChangeFlag: true,
+          status: 'registered',
+          userDetail: {
+            id: 1,
+            userId: 1,
+            details: 'one'
+          }
+        });
+      });
     });
 
     describe('utilities', function() {
@@ -1540,7 +1568,7 @@ module.exports = function(dataLayer, dataAdapter) {
 
         expect(model1._status).to.equal('new');
         expect(model2._status).to.equal('loaded');
-      })
+      });
     });
   });
 }

@@ -124,7 +124,7 @@ module.exports = function() {
       var defer = bluebird.defer();
 
       //figure out what relationships need to be parsed
-      if(_.isArray(relationships) && relationships.length > 1) {
+      if(_.isArray(relationships) && relationships.length > 0) {
         var relationshipsToParse = {};
 
         _.forEach(this._relationships, function(data, modelName) {

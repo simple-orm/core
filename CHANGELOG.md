@@ -1,3 +1,6 @@
+# master
+- Fixed bug where you could not use toJSONWithRelationships() with just passing 1 relationship
+
 # 0.4.0
 - moved location of boolean data conversion to make sure the _values property holds a consistent value
 - added support for nullable belongsTo relationship (a "can belong to" type relationship)
