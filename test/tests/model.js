@@ -537,7 +537,7 @@ module.exports = function(dataLayer, dataAdapter) {
           where: where
         });
 
-        expect(model.getPrimaryKeyData()).to.deep.equal({
+        expect(model._getPrimaryKeyData()).to.deep.equal({
           id: 3
         });
       });
@@ -555,7 +555,7 @@ module.exports = function(dataLayer, dataAdapter) {
           status:  'registered'
         });
 
-        expect(model.getDataStoreValues(dataAdapter._dataConverters)).to.deep.equal({
+        expect(model._getDataStoreValues(dataAdapter._dataConverters)).to.deep.equal({
           id: null,
           firstName:  'test',
           lastName:  'user',
@@ -583,7 +583,7 @@ module.exports = function(dataLayer, dataAdapter) {
           status:  'registered'
         });
 
-        expect(model.getInsertDataStoreValues(dataAdapter._dataConverters)).to.deep.equal({
+        expect(model._getInsertDataStoreValues(dataAdapter._dataConverters)).to.deep.equal({
           firstName:  'test',
           lastName:  'user',
           email:  'test.user@example.com',
@@ -608,7 +608,7 @@ module.exports = function(dataLayer, dataAdapter) {
           status:  'registered'
         });
 
-        expect(model.getUpdateDataStoreValues(dataAdapter._dataConverters)).to.deep.equal({
+        expect(model._getUpdateDataStoreValues(dataAdapter._dataConverters)).to.deep.equal({
           firstName:  'test',
           email:  'test.user@example.com',
           username:  'test.user',

@@ -127,9 +127,9 @@ module.exports = function() {
       if(_.isArray(relationships) && relationships.length > 0) {
         var relationshipsToParse = {};
 
-        _.forEach(this._relationships, function(data, modelName) {
-          if(relationships.indexOf(modelName) !== -1) {
-            relationshipsToParse[modelName] = data;
+        _.forEach(this._relationships, function(data, relationshipName) {
+          if(relationships.indexOf(relationshipName) !== -1) {
+            relationshipsToParse[relationshipName] = data;
           }
         })
       } else {
@@ -201,8 +201,8 @@ module.exports = function() {
         }, this);
       }
     },
-//TODO: make internal use
-    getDataStoreValues: function(dataConverters) {
+
+    _getDataStoreValues: function(dataConverters) {
       dataConverters = dataConverters || {};
       dataConverters = _.extend(defaultDataConverters, dataConverters);
       var dataStoreValues = {};
@@ -214,9 +214,9 @@ module.exports = function() {
 
       return dataStoreValues;
     },
-//TODO: make internal use
-    getInsertDataStoreValues: function(dataConverters) {
-      var dataStoreValues = this.getDataStoreValues(dataConverters);
+
+    _getInsertDataStoreValues: function(dataConverters) {
+      var dataStoreValues = this._getDataStoreValues(dataConverters);
 
       _.forEach(this._schema, function(value, key) {
         if(value.exclude === 'always' || value.exclude === 'insert' || value.autoIncrement === true) {
@@ -226,9 +226,9 @@ module.exports = function() {
 
       return dataStoreValues;
     },
-//TODO: make internal use
-    getUpdateDataStoreValues: function(dataConverters) {
-      var dataStoreValues = this.getDataStoreValues(dataConverters);
+
+    _getUpdateDataStoreValues: function(dataConverters) {
+      var dataStoreValues = this._getDataStoreValues(dataConverters);
 
       _.forEach(this._schema, function(value, key) {
         if(value.exclude === 'always' || value.exclude === 'update' || value.autoIncrement === true) {
@@ -238,9 +238,9 @@ module.exports = function() {
 
       return dataStoreValues;
     },
-//TODO: make internal use
-    getPrimaryKeyData: function(dataConverters) {
-      var dataStoreValues = this.getDataStoreValues(dataConverters);
+
+    _getPrimaryKeyData: function(dataConverters) {
+      var dataStoreValues = this._getDataStoreValues(dataConverters);
       var data = {};
 
       _.forEach(this._primaryKeys, function(value, key) {

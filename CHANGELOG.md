@@ -1,5 +1,6 @@
 # master
-- Fixed bug where you could not use toJSONWithRelationships() with just passing 1 relationship
+- added documentation to read me
+- fixed bug where you could not use toJSONWithRelationships() with just passing 1 relationship
 
 # 0.4.0
 - moved location of boolean data conversion to make sure the _values property holds a consistent value
