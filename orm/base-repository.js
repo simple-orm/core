@@ -63,9 +63,11 @@ module.exports = function(model, dataAdapter) {
     _hooks: {},
     _model: model,
     _dataAdapter: dataAdapter,
-    create: function(data) {
+    create: function(data, status) {
+      status = status || 'new';
       data = data || {};
       var returnObject = Object.create(model);
+      returnObject._status = status;
       returnObject.init(data, dataAdapter);
       return returnObject;
     },

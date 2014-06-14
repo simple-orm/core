@@ -1,15 +1,15 @@
 var expect = require('chai').expect;
 
 module.exports = function(model, expectedData) {
-  if(expectedData.id) {
+  if(expectedData.id !== undefined) {
     expect(model.id).to.equal(expectedData.id);
   }
 
-  if(expectedData.createdTimestamp) {
+  if(expectedData.createdTimestamp !== undefined) {
     expect(model.createdTimestamp).to.equal(expectedData.createdTimestamp);
   }
 
-  if(expectedData.updatedTimestamp) {
+  if(expectedData.updatedTimestamp !== undefined) {
     expect(model.updatedTimestamp).to.equal(expectedData.updatedTimestamp);
   }
 

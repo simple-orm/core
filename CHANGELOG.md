@@ -1,4 +1,6 @@
 # master
+- add status paramter to model`s, `loadData()` method
+- added `reset()` method to base model (#14)
 - added ability to pass a parameter list to `toJSONWithRelationships()` (#19)
 - added `excludeJson` property configuration option (#20)
 - renamed property configuration option `exclude` to `excludeSave` (#21)

@@ -25,13 +25,13 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
         });
 
         testUserValues(model, {
-          id:  undefined,
+          id: undefined,
           firstName: 'test',
           lastName: 'user',
           email: 'test.user@example.com',
           username: 'test.user',
           password: 'password',
-          createdTimestamp:  undefined,
+          createdTimestamp: undefined,
           updatedTimestamp: null,
           lastPasswordChangeDate: null,
           requirePasswordChangeFlag: false,
@@ -49,7 +49,7 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
         });
 
         testUserValues(model, {
-          id:  1,
+          id: 1,
           firstName: 'John',
           lastName: 'Doe',
           email: 'john.doe@example.com',
@@ -72,7 +72,7 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
 
         expect(models.length).to.equal(2);
         testUserValues(models[0], {
-          id:  1,
+          id: 1,
           firstName: 'John',
           lastName: 'Doe',
           email: 'john.doe@example.com',
@@ -86,7 +86,7 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
         });
 
         testUserValues(models[1], {
-          id:  3,
+          id: 3,
           firstName: 'John',
           lastName: 'Doe2',
           email: 'john.doe2@example.com',
@@ -206,7 +206,7 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
             dataLayer.user.removeHook('beforeFind[test]');
 
             testUserValues(model, {
-              id:  1,
+              id: 1,
               firstName: 'John',
               lastName: 'Doe',
               email: 'john.doe@example.com',
@@ -285,7 +285,7 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
             dataLayer.user.removeHook('afterFind[test]');
 
             testUserValues(model, {
-              id:  1,
+              id: 1,
               firstName: 'John-after',
               lastName: 'Doe',
               email: 'john.doe@example.com',
@@ -313,7 +313,7 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
             dataLayer.user.removeHook('beforeFindAll[test]');
 
             testUserValues(models[0], {
-              id:  1,
+              id: 1,
               firstName: 'John',
               lastName: 'Doe',
               email: 'john.doe@example.com',
@@ -327,7 +327,7 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
             });
 
             testUserValues(models[1], {
-              id:  3,
+              id: 3,
               firstName: 'John',
               lastName: 'Doe2',
               email: 'john.doe2@example.com',
@@ -408,7 +408,7 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
 
             expect(models.length).to.equal(1);
             testUserValues(models[0], {
-              id:  1,
+              id: 1,
               firstName: 'John',
               lastName: 'Doe',
               email: 'john.doe@example.com',

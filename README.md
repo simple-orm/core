@@ -302,7 +302,7 @@ You can also pass just a parameter list of relationships too:
 var userJsonWithRelationships = yield user.toJSONWithRelationships('Permissions', 'UserGroups');
 ```
 
-#### loadData(data)
+#### loadData(data, status)
 
 This will allow you to pass an object of data and load it into the model.
 
@@ -318,6 +318,8 @@ user.loadData({
   lastNAme: 'User'
 });
 ```
+
+You can also pass a second parameter that will change the status of the model (however this is primary designed for internal use).
 
 ### Defining Relationships
 

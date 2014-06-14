@@ -18,7 +18,7 @@ module.exports = function(dataLayer, dataAdapter) {
         var model = yield dataLayer.user.find(3);
 
         testUserValues(model, {
-          id:  3,
+          id: 3,
           firstName: 'John',
           lastName: 'Doe2',
           email: 'john.doe2@example.com',

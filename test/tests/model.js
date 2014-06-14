@@ -82,7 +82,7 @@ module.exports = function(dataLayer, dataAdapter) {
     });
 
     describe('data management', function() {
-      it('should be able to create a new instance', function*() {
+      it('should be able to save a new instance', function*() {
         var model = dataLayer.user.create({
           firstName: 'test',
           lastName: 'user',
@@ -193,6 +193,36 @@ module.exports = function(dataLayer, dataAdapter) {
         expect(model).to.be.null;
       });
 
+      it('should be able to load data in bulk', function*() {
+        var model = dataLayer.user.create();
+
+        model.loadData({
+          firstName: 'test',
+          lastName: 'user',
+          email: 'test.user@example.com',
+          username: 'test.user',
+          password: 'password',
+          updatedTimestamp: null,
+          lastPasswordChangeDate: null,
+          requirePasswordChangeFlag: false,
+          status: 'registered'
+        });
+
+        testUserValues(model, {
+          id: null,
+          firstName: 'test',
+          lastName: 'user',
+          email: 'test.user@example.com',
+          username: 'test.user',
+          password: 'password',
+          createdTimestamp: null,
+          updatedTimestamp: null,
+          lastPasswordChangeDate: null,
+          requirePasswordChangeFlag: false,
+          status: 'registered'
+        });
+      });
+
       it('should be able to define a custom property getter', function*() {
         var where = {};
         where[Object.keys(dataLayer.userEmailCustomGetter._model._primaryKeys)[0]] = 3;
@@ -234,6 +264,68 @@ module.exports = function(dataLayer, dataAdapter) {
         //should properly save to the database
         expect(freshModel.email).to.equal('setter-test@example.com');
       });
+
+      it('should be able to reset when created with no data', function*() {
+        var model = dataLayer.user.create();
+
+        model.loadData({
+          firstName: 'test',
+          lastName: 'user',
+          email: 'test.user@example.com',
+          username: 'test.user',
+          password: 'password',
+          updatedTimestamp: null,
+          lastPasswordChangeDate: null,
+          requirePasswordChangeFlag: true,
+          status: 'active'
+        });
+
+        model.reset();
+
+        testUserValues(model, {
+          id: null,
+          firstName: null,
+          lastName: null,
+          email: null,
+          username: null,
+          password: null,
+          createdTimestamp: null,
+          updatedTimestamp: null,
+          lastPasswordChangeDate: null,
+          requirePasswordChangeFlag: false,
+          status: 'registered'
+        });
+        expect(model._status).to.equal('new');
+      });
+
+      it('should be able to reset when created from data store', function*() {
+        var model = yield dataLayer.user.find({
+          where: {
+            firstName: 'John'
+          }
+        });
+
+        model.firstName = 'test';
+        model.lastName = 'user';
+        model.requirePasswordChangeFlag = true;
+
+        model.reset();
+
+        testUserValues(model, {
+          id: 1,
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john.doe@example.com',
+          username: 'john.doe',
+          password: 'password',
+          createdTimestamp: '2014-05-17T19:50:15.000Z',
+          updatedTimestamp: null,
+          lastPasswordChangeDate: null,
+          requirePasswordChangeFlag: true,
+          status: 'registered'
+        });
+        expect(model._status).to.equal('loaded');
+      });
     });
 
     describe('relationships', function() {
@@ -261,7 +353,7 @@ module.exports = function(dataLayer, dataAdapter) {
         var relationalModel = yield model.getUser();
 
         testUserValues(relationalModel, {
-          id:  1,
+          id: 1,
           firstName: 'John',
           lastName: 'Doe',
           email: 'john.doe@example.com',
@@ -537,34 +629,6 @@ module.exports = function(dataLayer, dataAdapter) {
           email: 'test.user@example.com',
           username: 'test.user',
           password: 'password',
-          updatedTimestamp: null,
-          lastPasswordChangeDate: null,
-          requirePasswordChangeFlag: false,
-          status: 'registered'
-        });
-
-        expect(model.toJSON()).to.deep.equal({
-          id: null,
-          firstName: 'test',
-          lastName: 'user',
-          email: 'test.user@example.com',
-          username: 'test.user',
-          createdTimestamp: null,
-          updatedTimestamp: null,
-          lastPasswordChangeDate: null,
-          requirePasswordChangeFlag: false,
-          status: 'registered'
-        });
-      });
-
-      it('should be able to convert to load data in bulk', function*() {
-        var model = dataLayer.user.create();
-
-        model.loadData({
-          firstName: 'test',
-          lastName: 'user',
-          email: 'test.user@example.com',
-          username: 'test.user',
           updatedTimestamp: null,
           lastPasswordChangeDate: null,
           requirePasswordChangeFlag: false,

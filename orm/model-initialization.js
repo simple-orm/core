@@ -62,7 +62,11 @@ module.exports = function(dataAdapter) {
   var sharedHooks = this._hooks;
 
   this._dataAdapter = dataAdapter;
-  this._status = 'new';
+
+  if(!this._status) {
+    this._status = 'new';
+  }
+
   this._emitter = new EventEmitter();
   this._hooks = {};
   this._values = {};

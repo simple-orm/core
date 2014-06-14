@@ -46,7 +46,19 @@ module.exports = function() {
 
     init: function(data, dataAdapter) {
       modelInitialization.apply(this, [dataAdapter]);
-      this.loadData(data);
+      this.loadData(data, this._status);
+      this._initialValues = data;
+      this._initialStatus = this._status;
+    },
+
+    reset: function() {
+      //reset all values to null
+      _.forEach(this._values, function(value, key) {
+        this._values[key] = this._schema[key].defaultValue !== undefined ? this._schema[key].defaultValue : null;
+      }, this);
+
+      //load initial data
+      this.loadData(this._initialValues, this._initialStatus);
     },
 
     save: function() {
@@ -231,13 +243,17 @@ module.exports = function() {
       return defer.promise;
     },
 
-    loadData: function(data) {
+    loadData: function(data, status) {
       if(data && _.isObject(data)) {
         _.forEach(this._schema, function(value, key) {
           if(data[value.column] !== undefined) {
             this[key] = data[value.column];
           }
         }, this);
+
+        if(status) {
+          this._status = status;
+        }
       }
     },
 
