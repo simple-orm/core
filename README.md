@@ -444,7 +444,7 @@ The `where` property is a object where the key is the name of the property and t
 
 So if you want to see if something is greater than something you could do:
 
-```language-javascript
+```javascript
 dataLayer.user.findAll({
   where: {
     age: {
@@ -457,7 +457,7 @@ dataLayer.user.findAll({
 
 This also supports comparisons that require multiple values or no values:
 
-```language-javascript
+```javascript
 dataLayer.user.findAll({
   where: {
     age: {
@@ -496,7 +496,7 @@ dataLayer.user.findAll({
 
 The `join` property is an array of joining tables done with repositories.  An element in the join array would look like this:
 
-```language-javascript
+```javascript
 dataLayer.user.findAll({
   join: [{
     repository: dataLayer.userEmail,
