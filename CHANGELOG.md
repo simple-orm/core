@@ -1,4 +1,4 @@
-# master
+# 0.5.0
 - added a collection object (#17)
 - fixed issue where if a call to the model's `toJSONWithRelationships()` method has no valid relationships passed, the promise would never get resolved
 - add status parameter to model`s, `loadData()` method
