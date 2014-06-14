@@ -1,5 +1,7 @@
 # master
-- add status paramter to model`s, `loadData()` method
+- added a collection object (#17)
+- fixed issue where if a call to the model's `toJSONWithRelationships()` method has no valid relationships passed, the promise would never get resolved
+- add status parameter to model`s, `loadData()` method
 - added `reset()` method to base model (#14)
 - added ability to pass a parameter list to `toJSONWithRelationships()` (#19)
 - added `excludeJson` property configuration option (#20)

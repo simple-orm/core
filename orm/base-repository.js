@@ -4,6 +4,7 @@ var bluebird = require('bluebird');
 var EventEmitter = require('events').EventEmitter;
 var hookable = require('./hookable');
 var interfaceChecker = require('interface-checker');
+var collectionFactory = require('./collection');
 
 interfaceChecker.define('SimpleOrmDataAdapter', [
   'insert:1',
@@ -136,8 +137,9 @@ module.exports = function(model, dataAdapter) {
 
         if(abort === false) {
           this._dataAdapter.findAll(model, options.criteria, this.create).then((function(results) {
-            this.runHooks('afterFindAll', [this, results]);
-            defer.resolve(results);
+            var collection = collectionFactory(results);
+            this.runHooks('afterFindAll', [this, collection]);
+            defer.resolve(collection);
           }).bind(this), function(error) {
             defer.reject(error);
           });

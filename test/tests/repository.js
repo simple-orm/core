@@ -71,7 +71,7 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
         });
 
         expect(models.length).to.equal(2);
-        testUserValues(models[0], {
+        testUserValues(models.getByIndex(0), {
           id: 1,
           firstName: 'John',
           lastName: 'Doe',
@@ -85,7 +85,7 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
           status: 'registered'
         });
 
-        testUserValues(models[1], {
+        testUserValues(models.getByIndex(1), {
           id: 3,
           firstName: 'John',
           lastName: 'Doe2',
@@ -141,7 +141,7 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
             }
           });
 
-          expect(models).to.be.null;
+          expect(models.length).to.equal(0);
         });
 
         it('should support between valued', function*() {
@@ -312,7 +312,7 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
             });
             dataLayer.user.removeHook('beforeFindAll[test]');
 
-            testUserValues(models[0], {
+            testUserValues(models.getByIndex(0), {
               id: 1,
               firstName: 'John',
               lastName: 'Doe',
@@ -326,7 +326,7 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
               status: 'registered'
             });
 
-            testUserValues(models[1], {
+            testUserValues(models.getByIndex(1), {
               id: 3,
               firstName: 'John',
               lastName: 'Doe2',
@@ -397,7 +397,7 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
         describe('afterFindAll', function() {
           it('single', function*() {
             dataLayer.user.hook('afterFindAll[test]', function(repository, models) {
-              models.splice(1, 1);
+              models.remove(3);
             });
             var models = yield dataLayer.user.findAll({
               where: {
@@ -407,7 +407,7 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
             dataLayer.user.removeHook('afterFindAll[test]');
 
             expect(models.length).to.equal(1);
-            testUserValues(models[0], {
+            testUserValues(models.getByIndex(0), {
               id: 1,
               firstName: 'John',
               lastName: 'Doe',

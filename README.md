@@ -4,6 +4,8 @@ This documentation can also be found [here](http://www.ryanzec.com/project-simpl
 
 Change log can be found [here](https://github.com/simple-orm/core/blob/master/CHANGELOG.md);
 
+FAQ can be found [here](https://github.com/simple-orm/core/wiki).
+
 A "simple" ORM for NodeJS.
 
 This ORM is designed to be light weight in the core framework but easily extendable to allow for more advance/specific features to be included in an opt-in way.  It has 2 main core components are `repositories` and `models`.  The base components will provide the basic functionality for creating, retrieving, and saving data.  The core framework will also provide the following:
@@ -553,7 +555,7 @@ var user = yield dataLayer.user.find({
 
 #### findAll(criteria)
 
-The `findAll()` method will find and return all models that match that passed criteria as an array, or null if nothing is found.
+The `findAll()` method will find and return a collection of models that match that passed criteria as an array, or null if nothing is found.
 
 ```javascript
 var user = yield dataLayer.user.find({
@@ -564,6 +566,115 @@ var user = yield dataLayer.user.find({
     }
   }
 });
+```
+
+## Collection Object
+
+A collection is a special object used to store 1 or more models of the same type.  It is what the repository's `findAll()` method returns and can be created by calling the `collection()` method of the core library:
+
+```javascript
+var simpleOrm = require('simple-orm');
+
+//create empty collection
+var collection = simpleOrm.collection();
+
+//create a collection with one model in it
+var collection - simpleOrm.collection(model);
+
+//create a collection with multiple models in it
+var collection - simpleOrm.collection([
+  model1,
+  model2
+]);
+```
+
+### Collection API
+
+#### add(models)
+
+Adds one or more models that are passed.  The parameter can be a single model or an array of models.
+
+```javascript
+collection.add(model);
+
+collection.add([
+  model1,
+  model2
+]);
+```
+
+#### remove(models)
+
+Removes 1 or more models that matches the passed parameter.  The parameter can be a single primary key, an array of primary keys, a single model, or array of models.
+
+```javascript
+collection.remove(1);
+
+collection.remove([
+  1,
+  2
+]);
+
+collection.remove(model);
+
+collection.remove([
+  model1,
+  model2
+]);
+```
+
+#### clear()
+
+Removes all models from the collection.
+
+```javascript
+collection.clear();
+```
+
+#### get(primaryKey)
+
+Returns the model matching the passed primary key.
+
+```javascript
+collection.get(1);
+```
+
+#### getByIndex(index)
+
+Returns the model matching the passed index.
+
+```javascript
+collection.getByIndex(0);
+```
+
+#### toJSON()
+
+The same thing as the model's `toJSON()` method except does it on all models in the collection.
+
+```javascript
+collection.toJSON();
+```
+
+#### toJSONWithRelationships(relationships)
+
+The same thing as the model's `toJSONWithRelationships()` method except does it on all models in the collection.
+
+```javascript
+collection.toJSONWithRelationship('Permissions');
+```
+
+#### length
+
+The collection object exposes a readonly `length` property that returns the number of models in the collection.
+
+```javascript
+var collection = simpleOrm.collection([
+  model1,
+  model2
+]);
+
+var count = collection.length;
+//count === 2
 ```
 
 ## Hook System
@@ -584,7 +695,7 @@ model.removeHook('beforeSave[test]');
 
 The second parameter is the hook function to be executed.
 
-All `before` hooks will have the last parameter be an abort callback.  Calling this within the hook function will prevent the default action from happening.  The abort method takes an optional parameter which if given, will be the return value of the original method call:
+Some hooks will have as their last parameter an `abort` callback.  Calling this within the hook function will prevent the default action from happening.  The `abort` method takes an optional parameter which if given, will be the return value of the original method call:
 
 ```javascript
 model.hook('beforeSave[test]', function(model, saveType, abort) {
@@ -606,7 +717,7 @@ model.hook('beforeSave[test]', function(model, saveType, abort) {
   }
 });
 
-Calling abort will also prevent any other hooks from executing after the hook calling abort.
+Calling `abort` will also prevent any other hooks from executing after the hook calling `abort`.
 
 var saveResults = model.save();
 // saveResults === false
@@ -643,20 +754,29 @@ The following hooks are supported:
 
 ### Repository
 
-- `beforeFind(repository, data, abort)`
+- `beforeFind(repository, options, abort)`
  - `repository`: The model
- - `data`: Object that holds a criteria property that can be modified and will be used in the search
+ - `options`: Object that holds a `criteria` property that can be modified and will be used in the search
  - `abort`: Abort callback
 - `afterFind(repository, model)`
  - `repository`: The model
  - `model`: The resulting model from the search (or null if nothing found);
-- `beforeFindAll(repository, data, abort)`
+- `beforeFindAll(repository, options, abort)`
  - `repository`: The model
- - `data`: Object that holds a criteria property that can be modified and will be used in the search
+ - `options`: Object that holds a `criteria` property that can be modified and will be used in the search
  - `abort`: Abort callback
-- `afterFindAll(resporitory, models)`
+- `afterFindAll(resporitory, collection)`
  - `repository`: The model
  - `models`: The resulting array of models from the search (or null if nothing found);
+
+### Collection
+
+- `beforeGetByPrimaryKey(collection, options)`
+ - `collection`: The collection
+ - `options`: Object that holds a `find` property that can be modified and will be used in the search
+- `afterGetByPrimaryKey(collection, model)`
+ - `collection`: The collection
+ - `model`: The model that is being returned
 
 Hooks call also be applied to specific model instances.
 

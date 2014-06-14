@@ -189,56 +189,60 @@ module.exports = function() {
 
       var callsLeft = Object.keys(relationshipsToParse).length;
 
-      _.forEach(relationshipsToParse, function(options) {
-        var nameToParse = options.options.as;
-        var relationshipName = nameToParse.substr(0, 1).toLowerCase() + nameToParse.substr(1);
+      if(callsLeft > 0) {
+        _.forEach(relationshipsToParse, function(options) {
+          var nameToParse = options.options.as;
+          var relationshipName = nameToParse.substr(0, 1).toLowerCase() + nameToParse.substr(1);
 
-        this[options.functionCall]().then(function(results) {
-          //usng this weird syntax in order to make sure arrays of models are properly serialized=
-          var relationshipJson = JSON.parse(JSON.stringify(results));
+          this[options.functionCall]().then(function(results) {
+            //usng this weird syntax in order to make sure arrays of models are properly serialized=
+            var relationshipJson = JSON.parse(JSON.stringify(results));
 
-          if(_.isArray(options.options.jsonProperties) && options.options.jsonProperties.length > 0) {
-            var parsedData = _.isArray(relationshipJson) ? [] : {};
+            if(_.isArray(options.options.jsonProperties) && options.options.jsonProperties.length > 0) {
+              var parsedData = _.isArray(relationshipJson) ? [] : {};
 
-            if(options.options.jsonProperties.length === 1) {
-              if(_.isArray(relationshipJson)) {
-                relationshipJson.forEach(function(modelJson) {
-                  parsedData.push(modelJson[options.options.jsonProperties[0]]);
-                });
-              } else {
-                parsedData = relationshipJson[options.options.jsonProperties[0]];
-              }
-            } else {
-              if(_.isArray(relationshipJson)) {
-                relationshipJson.forEach(function(modelJson) {
-                  var parsedModel = {};
-
-                  options.options.jsonProperties.forEach(function(property) {
-                    parsedModel[property] = modelJson[property];
+              if(options.options.jsonProperties.length === 1) {
+                if(_.isArray(relationshipJson)) {
+                  relationshipJson.forEach(function(modelJson) {
+                    parsedData.push(modelJson[options.options.jsonProperties[0]]);
                   });
-
-                  parsedData.push(parsedModel);
-                });
+                } else {
+                  parsedData = relationshipJson[options.options.jsonProperties[0]];
+                }
               } else {
-                options.options.jsonProperties.forEach(function(property) {
-                  parsedData[property] = relationshipJson[property];
-                });
+                if(_.isArray(relationshipJson)) {
+                  relationshipJson.forEach(function(modelJson) {
+                    var parsedModel = {};
+
+                    options.options.jsonProperties.forEach(function(property) {
+                      parsedModel[property] = modelJson[property];
+                    });
+
+                    parsedData.push(parsedModel);
+                  });
+                } else {
+                  options.options.jsonProperties.forEach(function(property) {
+                    parsedData[property] = relationshipJson[property];
+                  });
+                }
               }
+
+              relationshipJson = parsedData;
             }
 
-            relationshipJson = parsedData;
-          }
+            json[relationshipName] = relationshipJson;
+            callsLeft -= 1;
 
-          json[relationshipName] = relationshipJson;
-          callsLeft -= 1;
-
-          if(callsLeft === 0) {
-            defer.resolve(json);
-          }
-        }, function(error) {
-          defer.reject(error);
-        });
-      }, this);
+            if(callsLeft === 0) {
+              defer.resolve(json);
+            }
+          }, function(error) {
+            defer.reject(error);
+          });
+        }, this);
+      } else {
+        defer.resolve(json);
+      }
 
       return defer.promise;
     },

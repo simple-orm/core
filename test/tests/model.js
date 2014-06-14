@@ -343,7 +343,7 @@ module.exports = function(dataLayer, dataAdapter) {
         expect(relationalModel.details).to.equal('one');
       });
 
-      it('should be able to define belongsTo relationships', function*() {
+      it('should be able to define belongsTo relationship', function*() {
         var where = {};
         where[Object.keys(dataLayer.userDetail._model._primaryKeys)[0]] = 1;
         var model = yield dataLayer.userDetail.find({
@@ -367,7 +367,7 @@ module.exports = function(dataLayer, dataAdapter) {
         });
       });
 
-      it('should be able to define hasMany relationships', function*() {
+      it('should be able to define hasMany relationship', function*() {
         var where = {};
         where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
         var model = yield dataLayer.user.find({
@@ -376,16 +376,16 @@ module.exports = function(dataLayer, dataAdapter) {
 
         var relationalModels = yield model.getTestUserEmails();
 
-        expect(relationalModels[0].id).to.equal(1);
-        expect(relationalModels[0].userId).to.equal(1);
-        expect(relationalModels[0].email).to.equal('one@example.com');
+        expect(relationalModels.getByIndex(0).id).to.equal(1);
+        expect(relationalModels.getByIndex(0).userId).to.equal(1);
+        expect(relationalModels.getByIndex(0).email).to.equal('one@example.com');
 
-        expect(relationalModels[1].id).to.equal(5);
-        expect(relationalModels[1].userId).to.equal(1);
-        expect(relationalModels[1].email).to.equal('five@example.com');
+        expect(relationalModels.getByIndex(1).id).to.equal(5);
+        expect(relationalModels.getByIndex(1).userId).to.equal(1);
+        expect(relationalModels.getByIndex(1).email).to.equal('five@example.com');
       });
 
-      it('should be able to define hasMany relationships with through model', function*() {
+      it('should be able to define hasMany relationship with through model', function*() {
         var where = {};
         where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
         var model = yield dataLayer.user.find({
@@ -394,17 +394,17 @@ module.exports = function(dataLayer, dataAdapter) {
 
         var relationalModels = yield model.getPermissions();
 
-        expect(relationalModels[0].id).to.equal(1);
-        expect(relationalModels[0].title).to.equal('user.create');
+        expect(relationalModels.getByIndex(0).id).to.equal(1);
+        expect(relationalModels.getByIndex(0).title).to.equal('user.create');
 
-        expect(relationalModels[1].id).to.equal(2);
-        expect(relationalModels[1].title).to.equal('user.read');
+        expect(relationalModels.getByIndex(1).id).to.equal(2);
+        expect(relationalModels.getByIndex(1).title).to.equal('user.read');
 
-        expect(relationalModels[2].id).to.equal(3);
-        expect(relationalModels[2].title).to.equal('user.update');
+        expect(relationalModels.getByIndex(2).id).to.equal(3);
+        expect(relationalModels.getByIndex(2).title).to.equal('user.update');
 
-        expect(relationalModels[3].id).to.equal(4);
-        expect(relationalModels[3].title).to.equal('user.delete');
+        expect(relationalModels.getByIndex(3).id).to.equal(4);
+        expect(relationalModels.getByIndex(3).title).to.equal('user.delete');
       });
 
       it('should be able to define hasMany relationship with through model defining fields', function*() {
@@ -424,17 +424,17 @@ module.exports = function(dataLayer, dataAdapter) {
 
         var relationalModels = yield model.getPermissions();
 
-        expect(relationalModels[0].id).to.equal(1);
-        expect(relationalModels[0].title).to.equal('user.create');
+        expect(relationalModels.getByIndex(0).id).to.equal(1);
+        expect(relationalModels.getByIndex(0).title).to.equal('user.create');
 
-        expect(relationalModels[1].id).to.equal(2);
-        expect(relationalModels[1].title).to.equal('user.read');
+        expect(relationalModels.getByIndex(1).id).to.equal(2);
+        expect(relationalModels.getByIndex(1).title).to.equal('user.read');
 
-        expect(relationalModels[2].id).to.equal(3);
-        expect(relationalModels[2].title).to.equal('user.update');
+        expect(relationalModels.getByIndex(2).id).to.equal(3);
+        expect(relationalModels.getByIndex(2).title).to.equal('user.update');
 
-        expect(relationalModels[3].id).to.equal(4);
-        expect(relationalModels[3].title).to.equal('user.delete');
+        expect(relationalModels.getByIndex(3).id).to.equal(4);
+        expect(relationalModels.getByIndex(3).title).to.equal('user.delete');
       });
 
       it('should return null is a belongsTo does not link anyone (basically a "can belong to" type relationship)', function*() {
@@ -618,6 +618,33 @@ module.exports = function(dataLayer, dataAdapter) {
             'five@example.com'
           ]
         });
+      });
+
+      it('should return regular JSON is call to toJSONWithRelationships does not include any valid relationships', function*() {
+          var model = dataLayer.user.create({
+            firstName: 'test',
+            lastName: 'user',
+            email: 'test.user@example.com',
+            username: 'test.user',
+            password: 'password',
+            updatedTimestamp: null,
+            lastPasswordChangeDate: null,
+            requirePasswordChangeFlag: false,
+            status: 'registered'
+          });
+
+          expect(yield model.toJSONWithRelationships('TestTest')).to.deep.equal({
+            id: null,
+            firstName: 'test',
+            lastName: 'user',
+            email: 'test.user@example.com',
+            username: 'test.user',
+            createdTimestamp: null,
+            updatedTimestamp: null,
+            lastPasswordChangeDate: null,
+            requirePasswordChangeFlag: false,
+            status: 'registered'
+          });
       });
     });
 
@@ -1471,12 +1498,12 @@ module.exports = function(dataLayer, dataAdapter) {
             model.hook('afterGetRelationship[test]', function(model, relationshipType, relationshipModelName, relationalModels) {
               expect(relationshipType).to.equal('hasMany');
               expect(relationshipModelName).to.equal('UserEmail');
-              relationalModels[0].email = 'hook';
+              relationalModels.getByIndex(0).email = 'hook';
             });
 
             var relationalModels = yield model.getTestUserEmails();
 
-            expect(relationalModels[0].email).to.equal('hook');
+            expect(relationalModels.getByIndex(0).email).to.equal('hook');
           });
         });
       });
