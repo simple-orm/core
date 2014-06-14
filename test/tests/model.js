@@ -673,7 +673,7 @@ module.exports = function(dataLayer, dataAdapter) {
             expect(modelFromDatabase.createdTimestamp).to.not.be.undefined;
           });
 
-          it('multiple', function*() {
+          it('should not allow other hooks to be called if the abort callback is executed', function*() {
             var model = dataLayer.user.create({
               firstName: 'test',
               lastName: 'user',
@@ -682,51 +682,20 @@ module.exports = function(dataLayer, dataAdapter) {
               password: 'password'
             });
 
-            model.hook('beforeSave[test]', function(model, saveType) {
+            model.hook('beforeSave[test]', function(model, saveType, abort) {
               expect(saveType).to.equal('insert');
-              model.firstName = 'before-' + model.firstName;
-            });
-            model.hook('beforeSave[test2]', function(model, saveType) {
-              expect(saveType).to.equal('insert');
-              model.firstName = 'before-' + model.firstName;
-            });
-            yield model.save();
-
-            testUserValues(model, {
-              firstName:  'before-before-test',
-              lastName:  'user',
-              email:  'test.user@example.com',
-              username:  'test.user',
-              password:  'password',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
-              requirePasswordChangeFlag: false,
-              status:  'registered'
+              abort();
             });
 
-            var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = model.id;
-            var modelFromDatabase = yield dataLayer.user.find({
-              where: where
+            //this should never be called since the first hook calls the abort callback
+            model.hook('beforeSave[test2]', function(model, saveType, abort) {
+              expect(false).to.be.true;
             });
 
-            testUserValues(modelFromDatabase, {
-              firstName:  'before-before-test',
-              lastName:  'user',
-              email:  'test.user@example.com',
-              username:  'test.user',
-              password:  'password',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
-              requirePasswordChangeFlag: false,
-              status:  'registered'
-            });
-
-            expect(modelFromDatabase.id).to.be.at.least(5);
-            expect(modelFromDatabase.createdTimestamp).to.not.be.undefined;
+            expect(yield model.save()).to.be.false;
           });
 
-          it('should abort save if hook executes the abort callback', function*() {
+          it('should abort action if hook executes the abort callback', function*() {
             var model = dataLayer.user.create({
               firstName: 'test',
               lastName: 'user',
@@ -735,10 +704,10 @@ module.exports = function(dataLayer, dataAdapter) {
               password: 'password'
             });
 
-            model.hook('beforeSave[test]', function(model, saveType, abortCallback) {
+            model.hook('beforeSave[test]', function(model, saveType, abort) {
               expect(saveType).to.equal('insert');
               model.firstName = 'before-' + model.firstName;
-              abortCallback();
+              abort();
             });
             expect(yield model.save()).to.be.false;
 
@@ -756,7 +725,7 @@ module.exports = function(dataLayer, dataAdapter) {
             expect(model.id).to.null;
           });
 
-          it('should allow hook to pass back a custom value if action is aborted', function*() {
+          it('should allow hook to pass back a custom value if hook executes the abort callback', function*() {
             var model = dataLayer.user.create({
               firstName: 'test',
               lastName: 'user',
@@ -765,12 +734,63 @@ module.exports = function(dataLayer, dataAdapter) {
               password: 'password'
             });
 
-            model.hook('beforeSave[test]', function(model, saveType, abortCallback) {
+            model.hook('beforeSave[test]', function(model, saveType, abort) {
               expect(saveType).to.equal('insert');
               model.firstName = 'before-' + model.firstName;
-              abortCallback('test');
+              abort('test');
             });
             expect(yield model.save()).to.equal('test')
+          });
+        });
+
+        describe('afterSave (on insert)', function() {
+          it('single', function*() {
+            var model = dataLayer.user.create({
+              firstName: 'test',
+              lastName: 'user',
+              email: 'test.user@example.com',
+              username: 'test.user',
+              password: 'password'
+            });
+
+            model.hook('afterSave[test]', function(model, saveType) {
+              expect(saveType).to.equal('insert');
+              model.firstName = 'after-' + model.firstName;
+            });
+            yield model.save();
+
+            testUserValues(model, {
+              firstName:  'after-test',
+              lastName:  'user',
+              email:  'test.user@example.com',
+              username:  'test.user',
+              password:  'password',
+              updatedTimestamp:  null,
+              lastPasswordChangeDate:  null,
+              requirePasswordChangeFlag: false,
+              status:  'registered'
+            });
+
+            var where = {};
+            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = model.id;
+            var modelFromDatabase = yield dataLayer.user.find({
+              where: where
+            });
+
+            testUserValues(modelFromDatabase, {
+              firstName:  'test',
+              lastName:  'user',
+              email:  'test.user@example.com',
+              username:  'test.user',
+              password:  'password',
+              updatedTimestamp:  null,
+              lastPasswordChangeDate:  null,
+              requirePasswordChangeFlag: false,
+              status:  'registered'
+            });
+
+            expect(modelFromDatabase.id).to.be.at.least(5);
+            expect(modelFromDatabase.createdTimestamp).to.not.be.undefined;
           });
         });
 
@@ -827,63 +847,28 @@ module.exports = function(dataLayer, dataAdapter) {
             expect(moment(modelFromDatabase.updatedTimestamp).format('X') >= start).to.be.true;
           });
 
-          it('multiple', function*() {
-            var start = moment().format('X');
-
+          it('should not allow other hooks to be called if the abort callback is executed', function*() {
             var where = {};
             where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
             var model = yield dataLayer.user.find({
               where: where
             });
+            model.firstName = 'test';
 
-            model.requirePasswordChangeFlag = true;
-            model.hook('beforeSave[test]', function(model, saveType) {
+            model.hook('beforeSave[test]', function(model, saveType, abort) {
               expect(saveType).to.equal('update');
-              model.firstName = 'before-' + model.firstName;
-            });
-            model.hook('beforeSave[test2]', function(model, saveType) {
-              expect(saveType).to.equal('update');
-              model.firstName = 'before-' + model.firstName;
-            });
-            yield model.save();
-
-            testUserValues(model, {
-              id: 3,
-              firstName:  'before-before-John',
-              lastName:  'Doe2',
-              email:  'john.doe2@example.com',
-              username:  'john.doe2',
-              password:  'password',
-              createdTimestamp:  '2014-05-17T19:51:49.000Z',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
-              requirePasswordChangeFlag: true,
-              status:  'active'
+              abort();
             });
 
-            var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = model.id;
-            var modelFromDatabase = yield dataLayer.user.find({
-              where: where
+            //this should never be called since the first hook calls the abort callback
+            model.hook('beforeSave[test2]', function(model, saveType, abort) {
+              expect(false).to.be.true;
             });
 
-            testUserValues(modelFromDatabase, {
-              id: 3,
-              firstName:  'before-before-John',
-              lastName:  'Doe2',
-              email:  'john.doe2@example.com',
-              username:  'john.doe2',
-              password:  'password',
-              createdTimestamp:  '2014-05-17T19:51:49.000Z',
-              lastPasswordChangeDate:  null,
-              requirePasswordChangeFlag: true,
-              status:  'active'
-            });
-
-            expect(moment(modelFromDatabase.updatedTimestamp).format('X') >= start).to.be.true;
+            expect(yield model.save()).to.be.false;
           });
 
-          it('should abort save if hook executes the abort callback', function*() {
+          it('should abort action if hook executes the abort callback', function*() {
             var start = moment().format('X');
 
             var where = {};
@@ -893,10 +878,10 @@ module.exports = function(dataLayer, dataAdapter) {
             });
 
             model.requirePasswordChangeFlag = true;
-            model.hook('beforeSave[test]', function(model, saveType, abortCallback) {
+            model.hook('beforeSave[test]', function(model, saveType, abort) {
               expect(saveType).to.equal('update');
               model.firstName = 'before-' + model.firstName;
-              abortCallback();
+              abort();
             });
             expect(yield model.save()).to.be.false;
 
@@ -945,116 +930,12 @@ module.exports = function(dataLayer, dataAdapter) {
             });
 
             model.requirePasswordChangeFlag = true;
-            model.hook('beforeSave[test]', function(model, saveType, abortCallback) {
+            model.hook('beforeSave[test]', function(model, saveType, abort) {
               expect(saveType).to.equal('update');
               model.firstName = 'before-' + model.firstName;
-              abortCallback('test');
+              abort('test');
             });
             expect(yield model.save()).to.equal('test');
-          });
-        });
-
-        describe('afterSave (on insert)', function() {
-          it('single', function*() {
-            var model = dataLayer.user.create({
-              firstName: 'test',
-              lastName: 'user',
-              email: 'test.user@example.com',
-              username: 'test.user',
-              password: 'password'
-            });
-
-            model.hook('afterSave[test]', function(model, saveType) {
-              expect(saveType).to.equal('insert');
-              model.firstName = 'after-' + model.firstName;
-            });
-            yield model.save();
-
-            testUserValues(model, {
-              firstName:  'after-test',
-              lastName:  'user',
-              email:  'test.user@example.com',
-              username:  'test.user',
-              password:  'password',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
-              requirePasswordChangeFlag: false,
-              status:  'registered'
-            });
-
-            var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = model.id;
-            var modelFromDatabase = yield dataLayer.user.find({
-              where: where
-            });
-
-            testUserValues(modelFromDatabase, {
-              firstName:  'test',
-              lastName:  'user',
-              email:  'test.user@example.com',
-              username:  'test.user',
-              password:  'password',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
-              requirePasswordChangeFlag: false,
-              status:  'registered'
-            });
-
-            expect(modelFromDatabase.id).to.be.at.least(5);
-            expect(modelFromDatabase.createdTimestamp).to.not.be.undefined;
-          });
-
-          it('multiple', function*() {
-            var model = dataLayer.user.create({
-              firstName: 'test',
-              lastName: 'user',
-              email: 'test.user@example.com',
-              username: 'test.user',
-              password: 'password'
-            });
-
-            model.hook('afterSave[test]', function(model, saveType) {
-              expect(saveType).to.equal('insert');
-              model.firstName = 'after-' + model.firstName;
-            });
-            model.hook('afterSave[test2]', function(model, saveType) {
-              expect(saveType).to.equal('insert');
-              model.firstName = 'after-' + model.firstName;
-            });
-            yield model.save();
-
-            testUserValues(model, {
-              firstName:  'after-after-test',
-              lastName:  'user',
-              email:  'test.user@example.com',
-              username:  'test.user',
-              password:  'password',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
-              requirePasswordChangeFlag: false,
-              status:  'registered'
-            });
-
-            var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = model.id;
-            var modelFromDatabase = yield dataLayer.user.find({
-              where: where
-            });
-
-            testUserValues(modelFromDatabase, {
-              firstName:  'test',
-              lastName:  'user',
-              email:  'test.user@example.com',
-              username:  'test.user',
-              password:  'password',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
-              requirePasswordChangeFlag: false,
-              status:  'registered'
-            });
-
-            expect(modelFromDatabase.id).to.be.at.least(5);
-            expect(modelFromDatabase.createdTimestamp).to.not.be.undefined;
           });
         });
 
@@ -1078,62 +959,6 @@ module.exports = function(dataLayer, dataAdapter) {
             testUserValues(model, {
               id: 3,
               firstName:  'after-John',
-              lastName:  'Doe2',
-              email:  'john.doe2@example.com',
-              username:  'john.doe2',
-              password:  'password',
-              createdTimestamp:  '2014-05-17T19:51:49.000Z',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
-              requirePasswordChangeFlag: true,
-              status:  'active'
-            });
-
-            var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = model.id;
-            var modelFromDatabase = yield dataLayer.user.find({
-              where: where
-            });
-
-            testUserValues(modelFromDatabase, {
-              id: 3,
-              firstName:  'John',
-              lastName:  'Doe2',
-              email:  'john.doe2@example.com',
-              username:  'john.doe2',
-              password:  'password',
-              createdTimestamp:  '2014-05-17T19:51:49.000Z',
-              lastPasswordChangeDate:  null,
-              requirePasswordChangeFlag: true,
-              status:  'active'
-            });
-
-            expect(moment(modelFromDatabase.updatedTimestamp).format('X') >= start).to.be.true;
-          });
-
-          it('multiple', function*() {
-            var start = moment().format('X');
-
-            var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
-            var model = yield dataLayer.user.find({
-              where: where
-            });
-
-            model.requirePasswordChangeFlag = true;
-            model.hook('afterSave[test]', function(model, saveType) {
-              expect(saveType).to.equal('update');
-              model.firstName = 'after-' + model.firstName;
-            });
-            model.hook('afterSave[test]', function(model, saveType) {
-              expect(saveType).to.equal('update');
-              model.firstName = 'after-' + model.firstName;
-            });
-            yield model.save();
-
-            testUserValues(model, {
-              id: 3,
-              firstName:  'after-after-John',
               lastName:  'Doe2',
               email:  'john.doe2@example.com',
               username:  'john.doe2',
@@ -1190,22 +1015,38 @@ module.exports = function(dataLayer, dataAdapter) {
             expect(model).to.be.null;
           });
 
-          it('multiple', function*() {
+          it('should not allow other hooks to be called if the abort callback is executed', function*() {
             var where = {};
             where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
             var model = yield dataLayer.user.find({
               where: where
             });
 
-            model.hook('beforeRemove[test]', function(model) {
+            model.hook('beforeRemove[test]', function(model, abort) {
               expect(model.id).to.equal(3);
-              model.id = 4;
+              abort();
             });
-            model.hook('beforeRemove[test2]', function(model) {
-              expect(model.id).to.equal(4);
-              model.id = 3;
+
+            model.hook('beforeRemove[test2]', function(model, abort) {
+              expect(false).to.be.true;
             });
-            expect(yield model.remove()).to.be.true;
+
+            expect(yield model.remove()).to.be.false;
+          });
+
+          it('should abort action if hook executes the abort callback', function*() {
+            var where = {};
+            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            var model = yield dataLayer.user.find({
+              where: where
+            });
+
+            model.hook('beforeRemove[test]', function(model, abort) {
+              expect(model.id).to.equal(3);
+              abort();
+            });
+
+            expect(yield model.remove()).to.be.false;
 
             var where = {};
             where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
@@ -1213,7 +1054,22 @@ module.exports = function(dataLayer, dataAdapter) {
               where: where
             });
 
-            expect(model).to.be.null;
+            expect(model.id).to.equal(3);
+          });
+
+          it('should allow hook to pass back a custom value if action is aborted', function*() {
+            var where = {};
+            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            var model = yield dataLayer.user.find({
+              where: where
+            });
+
+            model.hook('beforeRemove[test]', function(model, abort) {
+              expect(model.id).to.equal(3);
+              abort('before remove abort');
+            });
+
+            expect(yield model.remove()).to.equal('before remove abort');
           });
         });
 
@@ -1238,32 +1094,6 @@ module.exports = function(dataLayer, dataAdapter) {
 
             expect(model).to.be.null;
           });
-
-          it('multiple', function*() {
-            var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
-            var model = yield dataLayer.user.find({
-              where: where
-            });
-
-            model.hook('afterRemove[test]', function(model) {
-              expect(model.id).to.equal(3);
-              model.id = 4;
-            });
-            model.hook('afterRemove[test2]', function(model) {
-              expect(model.id).to.equal(4);
-              model.id = 3;
-            });
-            expect(yield model.remove()).to.be.true;
-
-            var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
-            var model = yield dataLayer.user.find({
-              where: where
-            });
-
-            expect(model).to.be.null;
-          });
         });
 
         describe('beforeGetRelationship (belongsTo)', function() {
@@ -1273,18 +1103,15 @@ module.exports = function(dataLayer, dataAdapter) {
             var model = yield dataLayer.userDetail.find({
               where: where
             });
-            model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+            model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName) {
               expect(relationshipType).to.equal('belongsTo');
               expect(relationshipModelName).to.equal('User');
-              abort('test');
             });
 
-            var relationalModel = yield model.getUser();
-
-            expect(relationalModel).to.equal('test');
+            expect((yield model.getUser()).id).to.equal(1);
           });
 
-          it('multiple', function*() {
+          it('should not allow other hooks to be called if the abort callback is executed', function*() {
             var where = {};
             where[Object.keys(dataLayer.userDetail._model._primaryKeys)[0]] = 1;
             var model = yield dataLayer.userDetail.find({
@@ -1294,18 +1121,46 @@ module.exports = function(dataLayer, dataAdapter) {
             model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
               expect(relationshipType).to.equal('belongsTo');
               expect(relationshipModelName).to.equal('User');
-              abort('test');
+              abort();
             });
 
-            model.hook('beforeGetRelationship[test2]', function(model, relationshipType, relationshipModelName, abort) {
+            model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+              expect(false).to.be.true;
+            });
+
+            expect(yield model.getUser()).to.be.false;
+          });
+
+          it('should abort action if hook executes the abort callback', function*() {
+            var where = {};
+            where[Object.keys(dataLayer.userDetail._model._primaryKeys)[0]] = 1;
+            var model = yield dataLayer.userDetail.find({
+              where: where
+            });
+
+            model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
               expect(relationshipType).to.equal('belongsTo');
               expect(relationshipModelName).to.equal('User');
-              abort('test2');
+              abort();
             });
 
-            var relationalModel = yield model.getUser();
+            expect(yield model.getUser()).to.be.false;
+          });
 
-            expect(relationalModel).to.equal('test2');
+          it('should allow hook to pass back a custom value if action is aborted', function*() {
+            var where = {};
+            where[Object.keys(dataLayer.userDetail._model._primaryKeys)[0]] = 1;
+            var model = yield dataLayer.userDetail.find({
+              where: where
+            });
+
+            model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+              expect(relationshipType).to.equal('belongsTo');
+              expect(relationshipModelName).to.equal('User');
+              abort('before get relationship abort');
+            });
+
+            expect(yield model.getUser()).to.equal('before get relationship abort');
           });
         });
 
@@ -1326,30 +1181,6 @@ module.exports = function(dataLayer, dataAdapter) {
 
             expect(relationalModel.firstName).to.equal('hook');
           });
-
-          it('multiple', function*() {
-            var where = {};
-            where[Object.keys(dataLayer.userDetail._model._primaryKeys)[0]] = 1;
-            var model = yield dataLayer.userDetail.find({
-              where: where
-            });
-
-            model.hook('afterGetRelationship[test]', function(model, relationshipType, relationshipModelName, relationalModel) {
-              expect(relationshipType).to.equal('belongsTo');
-              expect(relationshipModelName).to.equal('User');
-              relationalModel.firstName = 'hook';
-            });
-
-            model.hook('afterGetRelationship[test2]', function(model, relationshipType, relationshipModelName, relationalModel) {
-              expect(relationshipType).to.equal('belongsTo');
-              expect(relationshipModelName).to.equal('User');
-              relationalModel.firstName += 'hook2';
-            });
-
-            var relationalModel = yield model.getUser();
-
-            expect(relationalModel.firstName).to.equal('hookhook2');
-          });
         });
 
         describe('beforeGetRelationship (hasOne)', function() {
@@ -1363,15 +1194,12 @@ module.exports = function(dataLayer, dataAdapter) {
             model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
               expect(relationshipType).to.equal('hasOne');
               expect(relationshipModelName).to.equal('UserDetail');
-              abort('test');
             });
 
-            var relationalModel = yield model.getUserDetail();
-
-            expect(relationalModel).to.equal('test');
+            expect((yield model.getUserDetail()).id).to.equal(1);
           });
 
-          it('multiple', function*() {
+          it('should not allow other hooks to be called if the abort callback is executed', function*() {
             var where = {};
             where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
             var model = yield dataLayer.user.find({
@@ -1381,18 +1209,46 @@ module.exports = function(dataLayer, dataAdapter) {
             model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
               expect(relationshipType).to.equal('hasOne');
               expect(relationshipModelName).to.equal('UserDetail');
-              abort('test');
+              abort();
             });
 
             model.hook('beforeGetRelationship[test2]', function(model, relationshipType, relationshipModelName, abort) {
-              expect(relationshipType).to.equal('hasOne');
-              expect(relationshipModelName).to.equal('UserDetail');
-              abort('test2');
+              expect(false).to.be.true;
             });
 
-            var relationalModel = yield model.getUserDetail();
+            expect(yield model.getUserDetail()).to.false;
+          });
 
-            expect(relationalModel).to.equal('test2');
+          it('should abort action if hook executes the abort callback', function*() {
+            var where = {};
+            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            var model = yield dataLayer.user.find({
+              where: where
+            });
+
+            model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+              expect(relationshipType).to.equal('hasOne');
+              expect(relationshipModelName).to.equal('UserDetail');
+              abort();
+            });
+
+            expect(yield model.getUserDetail()).to.be.false;
+          });
+
+          it('should allow hook to pass back a custom value if action is aborted', function*() {
+            var where = {};
+            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            var model = yield dataLayer.user.find({
+              where: where
+            });
+
+            model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+              expect(relationshipType).to.equal('hasOne');
+              expect(relationshipModelName).to.equal('UserDetail');
+              abort('before get relationship abort');
+            });
+
+            expect(yield model.getUserDetail()).to.equal('before get relationship abort');
           });
         });
 
@@ -1414,30 +1270,6 @@ module.exports = function(dataLayer, dataAdapter) {
 
             expect(relationalModel.details).to.equal('hook');
           });
-
-          it('multiple', function*() {
-            var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
-            var model = yield dataLayer.user.find({
-              where: where
-            });
-
-            model.hook('afterGetRelationship[test]', function(model, relationshipType, relationshipModelName, relationalModel) {
-              expect(relationshipType).to.equal('hasOne');
-              expect(relationshipModelName).to.equal('UserDetail');
-              relationalModel.details = 'hook';
-            });
-
-            model.hook('afterGetRelationship[test2]', function(model, relationshipType, relationshipModelName, relationalModel) {
-              expect(relationshipType).to.equal('hasOne');
-              expect(relationshipModelName).to.equal('UserDetail');
-              relationalModel.details += 'hook2';
-            });
-
-            var relationalModel = yield model.getUserDetail();
-
-            expect(relationalModel.details).to.equal('hookhook2');
-          });
         });
 
         describe('beforeGetRelationship (hasMany)', function() {
@@ -1451,15 +1283,12 @@ module.exports = function(dataLayer, dataAdapter) {
             model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
               expect(relationshipType).to.equal('hasMany');
               expect(relationshipModelName).to.equal('UserEmail');
-              abort('test');
             });
 
-            var relationalModels = yield model.getTestUserEmails();
-
-            expect(relationalModels).to.equal('test');
+            expect((yield model.getTestUserEmails()).length).to.equal(2);
           });
 
-          it('multiple', function*() {
+          it('should not allow other hooks to be called if the abort callback is executed', function*() {
             var where = {};
             where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
             var model = yield dataLayer.user.find({
@@ -1469,18 +1298,46 @@ module.exports = function(dataLayer, dataAdapter) {
             model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
               expect(relationshipType).to.equal('hasMany');
               expect(relationshipModelName).to.equal('UserEmail');
-              abort('test');
+              abort();
+            });
+
+            model.hook('beforeGetRelationship[test2]', function(model, relationshipType, relationshipModelName, abort) {
+              expect(false).to.be.true;
+            });
+
+            expect(yield model.getTestUserEmails()).to.be.false;
+          });
+
+          it('should abort action if hook executes the abort callback', function*() {
+            var where = {};
+            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            var model = yield dataLayer.user.find({
+              where: where
             });
 
             model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
               expect(relationshipType).to.equal('hasMany');
               expect(relationshipModelName).to.equal('UserEmail');
-              abort('test2');
+              abort();
             });
 
-            var relationalModels = yield model.getTestUserEmails();
+            expect(yield model.getTestUserEmails()).to.be.false;
+          });
 
-            expect(relationalModels).to.equal('test2');
+          it('should allow hook to pass back a custom value if action is aborted', function*() {
+            var where = {};
+            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            var model = yield dataLayer.user.find({
+              where: where
+            });
+
+            model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+              expect(relationshipType).to.equal('hasMany');
+              expect(relationshipModelName).to.equal('UserEmail');
+              abort('before get relationship abort');
+            });
+
+            expect(yield model.getTestUserEmails()).to.equal('before get relationship abort');
           });
         });
 
@@ -1501,30 +1358,6 @@ module.exports = function(dataLayer, dataAdapter) {
             var relationalModels = yield model.getTestUserEmails();
 
             expect(relationalModels[0].email).to.equal('hook');
-          });
-
-          it('multiple', function*() {
-            var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
-            var model = yield dataLayer.user.find({
-              where: where
-            });
-
-            model.hook('afterGetRelationship[test]', function(model, relationshipType, relationshipModelName, relationalModels) {
-              expect(relationshipType).to.equal('hasMany');
-              expect(relationshipModelName).to.equal('UserEmail');
-              relationalModels[0].email = 'hook';
-            });
-
-            model.hook('afterGetRelationship[test]', function(model, relationshipType, relationshipModelName, relationalModels) {
-              expect(relationshipType).to.equal('hasMany');
-              expect(relationshipModelName).to.equal('UserEmail');
-              relationalModels[0].email += 'hook2';
-            });
-
-            var relationalModels = yield model.getTestUserEmails();
-
-            expect(relationalModels[0].email).to.equal('hookhook2');
           });
         });
       });

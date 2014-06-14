@@ -1,4 +1,9 @@
 # master
+- model's beforeRemove now passed the abort callback (#18)
+- if a hook aborts the action, any hook that would have executed after is no longer executed (#22)
+- remove tests from model that was testing the same thing as one of the hookable tests
+
+- converting certain methods to be marked as internal (with a leading underscore)
 - added documentation to read me
 - fixed bug where you could not use toJSONWithRelationships() with just passing 1 relationship
 

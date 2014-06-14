@@ -243,7 +243,7 @@ user.firstName = 'test';
 yield user.save();
 ```
 
-This will resolve to `true` if successful or be rejected with the error (unless a `beforeSave` hook returns some other value).
+This will resolve to `true` if successful or be rejected with the error (unless a `beforeSave` hook aborts with some other value).
 
 #### remove()
 
@@ -259,7 +259,7 @@ var user = yield dataLayer.user.find({
 yield user.remove();
 ```
 
-This will resolve to `true` if successful or be rejected with the error.  It is also important to note that the model object will still retain the data even after it has been deleted from the data store.
+This will resolve to `true` if successful or be rejected with the error (unless a `beforeHook` hook aborts with some other value).  It is also important to note that the model object will still retain the data even after it has been deleted from the data store.
 
 #### toJSON()
 
@@ -585,7 +585,22 @@ model.hook('beforeSave[test]', function(model, saveType, abort) {
 });
 
 var saveResults = model.save();
-// saveResults = 'test'
+// saveResults === 'test'
+```
+
+If you call abort without a parameter, false will be returned:
+
+```javascript
+model.hook('beforeSave[test]', function(model, saveType, abort) {
+  if(/*some condition*/true) {
+    abort();
+  }
+});
+
+Calling abort will also prevent any other hooks from executing after the hook calling abort.
+
+var saveResults = model.save();
+// saveResults === false
 ```
 
 The following hooks are supported:

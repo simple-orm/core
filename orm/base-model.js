@@ -59,32 +59,41 @@ module.exports = function() {
         if(returnValue) {
           abortValue = returnValue;
         }
+
+        throw 'error to prevent other hooks from executing';
       };
 
-      if(this._status === 'new') {
-        this.runHooks('beforeSave', [this, 'insert', abortSaveCallback]);
+      try {
+        if(this._status === 'new') {
+          this.runHooks('beforeSave', [this, 'insert', abortSaveCallback]);
 
-        if(abort === false) {
-          this._dataAdapter.insert(this).then((function() {
-            this.runHooks('afterSave', [this, 'insert']);
-            defer.resolve(true);
-          }).bind(this), function(error) {
-            defer.reject(error);
-          });
-        }
-      } else if(this._status === 'dirty') {
-        this.runHooks('beforeSave', [this, 'update', abortSaveCallback]);
+          if(abort === false) {
+            this._dataAdapter.insert(this).then((function() {
+              this.runHooks('afterSave', [this, 'insert']);
+              defer.resolve(true);
+            }).bind(this), function(error) {
+              defer.reject(error);
+            });
+          }
+        } else if(this._status === 'dirty') {
+          this.runHooks('beforeSave', [this, 'update', abortSaveCallback]);
 
-        if(abort === false) {
-          this._dataAdapter.update(this).then((function() {
-            this.runHooks('afterSave', [this, 'update']);
-            defer.resolve(true);
-          }).bind(this), function(error) {
-            defer.reject(error);
-          });
+          if(abort === false) {
+            this._dataAdapter.update(this).then((function() {
+              this.runHooks('afterSave', [this, 'update']);
+              defer.resolve(true);
+            }).bind(this), function(error) {
+              defer.reject(error);
+            });
+          }
+        } else {
+          defer.resolve(true);
         }
-      } else {
-        defer.resolve(true);
+      } catch(exception) {
+        //any other execption needs to bubble up, this exception is expected
+        if(exception !== 'error to prevent other hooks from executing') {
+          throw exception;
+        }
       }
 
       if(abort === true) {
@@ -96,15 +105,39 @@ module.exports = function() {
 
     remove: function() {
       var defer = bluebird.defer();
+      var abort = false;
+      var abortValue = false;
+      var abortSaveCallback = function(returnValue) {
+        abort = true;
 
-      this.runHooks('beforeRemove', [this]);
+        if(returnValue) {
+          abortValue = returnValue;
+        }
 
-      this._dataAdapter.remove(this).then((function() {
-        this.runHooks('afterRemove', [this]);
-        defer.resolve(true);
-      }).bind(this), function(error) {
-        defer.reject(error);
-      });
+        throw 'error to prevent other hooks from executing';
+      };
+
+      try {
+        this.runHooks('beforeRemove', [this, abortSaveCallback]);
+
+        if(abort === false) {
+          this._dataAdapter.remove(this).then((function() {
+            this.runHooks('afterRemove', [this]);
+            defer.resolve(true);
+          }).bind(this), function(error) {
+            defer.reject(error);
+          });
+        }
+      } catch(exception) {
+        //any other execption needs to bubble up, this exception is expected
+        if(exception !== 'error to prevent other hooks from executing') {
+          throw exception;
+        }
+      }
+
+      if(abort === true) {
+        defer.resolve(abortValue);
+      }
 
       return defer.promise;
     },
@@ -273,30 +306,39 @@ module.exports = function() {
           if(returnValue) {
             abortValue = returnValue;
           }
+
+          throw 'error to prevent other hooks from executing';
         };
         var valueField = options.relationProperty || decapitalize(repository._model._modelName) + 'Id';
 
-        this.runHooks('beforeGetRelationship', [this, 'belongsTo', repository._model._modelName, abortSaveCallback])
+        try {
+          this.runHooks('beforeGetRelationship', [this, 'belongsTo', repository._model._modelName, abortSaveCallback])
 
-        if(abort === false) {
-          //this adds support for relationships that are nullable
-          if(!this[valueField]) {
-            defer.resolve(null);
-            return defer.promise;
+          if(abort === false) {
+            //this adds support for relationships that are nullable
+            if(!this[valueField]) {
+              defer.resolve(null);
+              return defer.promise;
+            }
+
+            var criteria = {
+              where: {}
+            };
+
+            criteria.where['id'] = this[valueField];
+
+            repository.find(criteria).then((function(results) {
+              this.runHooks('afterGetRelationship', [this, 'belongsTo', repository._model._modelName, results]);
+              defer.resolve(results);
+            }).bind(this), function(error) {
+              defer.reject(error);
+            });
           }
-
-          var criteria = {
-            where: {}
-          };
-
-          criteria.where['id'] = this[valueField];
-
-          repository.find(criteria).then((function(results) {
-            this.runHooks('afterGetRelationship', [this, 'belongsTo', repository._model._modelName, results]);
-            defer.resolve(results);
-          }).bind(this), function(error) {
-            defer.reject(error);
-          });
+        } catch(exception) {
+          //any other execption needs to bubble up, this exception is expected
+          if(exception !== 'error to prevent other hooks from executing') {
+            throw exception;
+          }
         }
 
         if(abort === true) {
@@ -330,24 +372,33 @@ module.exports = function() {
           if(returnValue) {
             abortValue = returnValue;
           }
+
+          throw 'error to prevent other hooks from executing';
         };
         var valueField = options.property || decapitalize(this._modelName) + 'Id';
 
-        this.runHooks('beforeGetRelationship', [this, 'hasOne', repository._model._modelName, abortSaveCallback]);
+        try {
+          this.runHooks('beforeGetRelationship', [this, 'hasOne', repository._model._modelName, abortSaveCallback]);
 
-        if(abort === false) {
-          var criteria = {
-            where: {}
-          };
+          if(abort === false) {
+            var criteria = {
+              where: {}
+            };
 
-          criteria.where[valueField] = this.id;
+            criteria.where[valueField] = this.id;
 
-          repository.find(criteria).then((function(results) {
-            this.runHooks('afterGetRelationship', [this, 'hasOne', repository._model._modelName, results]);
-            defer.resolve(results);
-          }).bind(this), function(error) {
-            defer.reject(error);
-          });
+            repository.find(criteria).then((function(results) {
+              this.runHooks('afterGetRelationship', [this, 'hasOne', repository._model._modelName, results]);
+              defer.resolve(results);
+            }).bind(this), function(error) {
+              defer.reject(error);
+            });
+          }
+        } catch(exception) {
+          //any other execption needs to bubble up, this exception is expected
+          if(exception !== 'error to prevent other hooks from executing') {
+            throw exception;
+          }
         }
 
         if(abort === true) {
@@ -382,39 +433,48 @@ module.exports = function() {
           if(returnValue) {
             abortValue = returnValue;
           }
+
+          throw 'error to prevent other hooks from executing';
         };
 
-        this.runHooks('beforeGetRelationship', [this, 'hasMany', repository._model._modelName, abortSaveCallback]);
+        try {
+          this.runHooks('beforeGetRelationship', [this, 'hasMany', repository._model._modelName, abortSaveCallback]);
 
-        if(abort === false) {
-          var criteria = {};
-          var selfField = options.property || decapitalize(this._modelName) + 'Id';
+          if(abort === false) {
+            var criteria = {};
+            var selfField = options.property || decapitalize(this._modelName) + 'Id';
 
-          if(throughRepository) {
-            var relationField = options.relationProperty || decapitalize(repository._model._modelName) + 'Id';
-            var on = {};
+            if(throughRepository) {
+              var relationField = options.relationProperty || decapitalize(repository._model._modelName) + 'Id';
+              var on = {};
 
-            on[throughRepository._model._table + '.' + selfField] = this.id;
-            on[throughRepository._model._table + '.' + relationField] = {
-              value: repository._model._table + '.' + Object.keys(repository._model._primaryKeys)[0],
-              valueType: 'field'
-            };
+              on[throughRepository._model._table + '.' + selfField] = this.id;
+              on[throughRepository._model._table + '.' + relationField] = {
+                value: repository._model._table + '.' + Object.keys(repository._model._primaryKeys)[0],
+                valueType: 'field'
+              };
 
-            criteria.join = [{
-              repository: throughRepository,
-              on: on
-            }];
-          } else {
-            criteria.where = {};
-            criteria.where[selfField] = this.id;
+              criteria.join = [{
+                repository: throughRepository,
+                on: on
+              }];
+            } else {
+              criteria.where = {};
+              criteria.where[selfField] = this.id;
+            }
+
+            repository.findAll(criteria).then((function(results) {
+              this.runHooks('afterGetRelationship', [this, 'hasMany', repository._model._modelName, results]);
+              defer.resolve(results);
+            }).bind(this), function(error) {
+              defer.reject(error);
+            });
           }
-
-          repository.findAll(criteria).then((function(results) {
-            this.runHooks('afterGetRelationship', [this, 'hasMany', repository._model._modelName, results]);
-            defer.resolve(results);
-          }).bind(this), function(error) {
-            defer.reject(error);
-          });
+        } catch(exception) {
+          //any other execption needs to bubble up, this exception is expected
+          if(exception !== 'error to prevent other hooks from executing') {
+            throw exception;
+          }
         }
 
         if(abort === true) {
