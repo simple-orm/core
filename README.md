@@ -53,7 +53,7 @@ npm install simple-orm
 
 If you wish to experiment with the latest and greatest version, this is how you should define your dependency in your `package.json` file:
 
-```language-javascript
+```javascript
 "simple-orm": "git://github.com/simple-orm/core.git#master"
 ```
 
