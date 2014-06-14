@@ -1,6 +1,6 @@
 # master
-- model's beforeRemove now passed the abort callback (#18)
-- if a hook aborts the action, any hook that would have executed after is no longer executed (#22)
+- model's beforeRemove hook now passes the abort callback (#18)
+- if a hook aborts the action, any hooks that would have executed after are no longer executed (#22)
 - remove tests from model that was testing the same thing as one of the hookable tests
 
 - converting certain methods to be marked as internal (with a leading underscore)
