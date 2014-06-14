@@ -344,7 +344,7 @@ model.hasMany(repositories.permissions, {
 
 ##### property `hasOne()` `hasMany()`
 
-The `property` property is the property of the model defining the relationship to use to join and get the relation model.
+The `property` property is the data store property of the model defining the relationship to use to join and get the relation model.
 
 ```javascript
 //this generate this the follow criteria object when calling getUserDetail():
@@ -368,7 +368,7 @@ model.hasOne(repositories.userDetail, {
 
 ##### relationProperty `belongsTo()` `hasMany()`
 
-The `relationProperty` is the property of the model relation model use to join and get the relation model
+The `relationProperty` is the data store property of the model relation model use to join and get the relation model
 
 ```javascript
 //this generate this the follow criteria object when calling getUser():
@@ -436,7 +436,7 @@ The criteria object is used when searching for data through the repository's `fi
 
 #### Where
 
-The `where` property is a object where the key is the name of the property and the value is either the value to validate against which would be an equals comparison or an object.  If you need to do something besides an equals comparison, you can use an object which can have the follow properties:
+The `where` property is a object where the key is the name of the data store property and the value is either the value to validate against which would be an equals comparison or an object.  If you need to do something besides an equals comparison, you can use an object which can have the follow properties:
 
 - `comparison`: The comparison operator to use
 - `value`: The value or array of values to check
