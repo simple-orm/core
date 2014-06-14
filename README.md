@@ -214,7 +214,7 @@ The forth parameter are the property configurations.  This is used to map the ta
 - `*getter (function)`: A custom getter function used when retrieving the property (is passed a parameter of the value and expects a value to be returned)
 - `*setter (function)`: A custom setter function used when setting the property (is passed a parameter of the value and expects a value to be returned)
 - `*defaultValue (mixed)`: The default value to set when creating a new model instance
-- `*exclude (string)`: When to exclude the property when the data adapter syncs that data to the data store, the value can be:
+- `*excludeSave (string)`: When to exclude the property when the data adapter syncs that data to the data store, the value can be:
  - `insert`
  - `update`
  - `both`
