@@ -252,7 +252,7 @@ module.exports = function() {
       var dataStoreValues = this._getDataStoreValues(dataConverters);
 
       _.forEach(this._schema, function(value, key) {
-        if(value.exclude === 'always' || value.exclude === 'insert' || value.autoIncrement === true) {
+        if(value.excludeSave === 'always' || value.excludeSave === 'insert' || value.autoIncrement === true) {
           delete dataStoreValues[value.column];
         }
       }, this);
@@ -264,7 +264,7 @@ module.exports = function() {
       var dataStoreValues = this._getDataStoreValues(dataConverters);
 
       _.forEach(this._schema, function(value, key) {
-        if(value.exclude === 'always' || value.exclude === 'update' || value.autoIncrement === true) {
+        if(value.excludeSave === 'always' || value.excludeSave === 'update' || value.autoIncrement === true) {
           delete dataStoreValues[value.column];
         }
       }, this);

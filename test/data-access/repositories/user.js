@@ -22,7 +22,7 @@ model.define('User', 'OrmTest', 'Users', {
   lastName: {
     column: 'lastName',
     type: 'string',
-    exclude: 'update'
+    excludeSave: 'update'
   },
   email: {
     column: 'email',
@@ -45,14 +45,14 @@ model.define('User', 'OrmTest', 'Users', {
   createdTimestamp: {
     column: 'createdTimestamp',
     type: 'datetime',
-    exclude: 'always'
+    excludeSave: 'always'
   },
   updatedTimestamp: {
     column: 'updatedTimestamp',
     type: 'datetime',
     allowNull: true,
     defaultValue: null,
-    exclude: 'insert'
+    excludeSave: 'insert'
   },
   lastPasswordChangeDate: {
     column: 'lastPasswordChangeDate',
