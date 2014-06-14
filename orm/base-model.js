@@ -201,7 +201,7 @@ module.exports = function() {
         }, this);
       }
     },
-
+//TODO: make internal use
     getDataStoreValues: function(dataConverters) {
       dataConverters = dataConverters || {};
       dataConverters = _.extend(defaultDataConverters, dataConverters);
@@ -214,7 +214,7 @@ module.exports = function() {
 
       return dataStoreValues;
     },
-
+//TODO: make internal use
     getInsertDataStoreValues: function(dataConverters) {
       var dataStoreValues = this.getDataStoreValues(dataConverters);
 
@@ -226,7 +226,7 @@ module.exports = function() {
 
       return dataStoreValues;
     },
-
+//TODO: make internal use
     getUpdateDataStoreValues: function(dataConverters) {
       var dataStoreValues = this.getDataStoreValues(dataConverters);
 
@@ -238,7 +238,7 @@ module.exports = function() {
 
       return dataStoreValues;
     },
-
+//TODO: make internal use
     getPrimaryKeyData: function(dataConverters) {
       var dataStoreValues = this.getDataStoreValues(dataConverters);
       var data = {};
