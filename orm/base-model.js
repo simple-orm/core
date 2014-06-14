@@ -155,6 +155,10 @@ module.exports = function() {
     },
 
     toJSONWithRelationships: function(relationships) {
+      if(_.isString(relationships)) {
+        relationships = Array.prototype.slice.call(arguments, 0);
+      }
+
       var json = this.toJSON();
       var defer = bluebird.defer();
 

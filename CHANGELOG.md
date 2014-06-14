@@ -1,4 +1,5 @@
 # master
+- added ability to pass a parameter list to `toJSONWithRelationships()` (#19)
 - added `excludeJson` property configuration option (#20)
 - renamed property configuration option `exclude` to `excludeSave` (#21)
 - model's `beforeRemove` hook now passes the abort callback (#18)

@@ -293,7 +293,13 @@ var user = yield dataLayer.user.find({
 var userJsonWithRelationships = yield user.toJSONWithRelationships();
 
 //for just the permissions relationship
-var userJsonWithRelationships = yield user.toJSONWithRelationships(['permissions']);
+var userJsonWithRelationships = yield user.toJSONWithRelationships(['Permissions']);
+```
+
+You can also pass just a parameter list of relationships too:
+
+```javascript
+var userJsonWithRelationships = yield user.toJSONWithRelationships('Permissions', 'UserGroups');
 ```
 
 #### loadData(data)
