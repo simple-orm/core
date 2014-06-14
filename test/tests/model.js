@@ -4,7 +4,7 @@ var testUserValues = require('../test-user-values');
 var moment = require('moment');
 
 module.exports = function(dataLayer, dataAdapter) {
-  describe('instance', function() {
+  describe('model', function() {
     beforeEach(function*(){
       //dataAdapter.enableDebug();
       yield dataAdapter.startTransaction();
@@ -94,15 +94,15 @@ module.exports = function(dataLayer, dataAdapter) {
         yield model.save();
 
         testUserValues(model, {
-          firstName:  'test',
-          lastName:  'user',
-          email:  'test.user@example.com',
-          username:  'test.user',
-          password:  'password',
-          updatedTimestamp:  null,
-          lastPasswordChangeDate:  null,
+          firstName: 'test',
+          lastName: 'user',
+          email: 'test.user@example.com',
+          username: 'test.user',
+          password: 'password',
+          updatedTimestamp: null,
+          lastPasswordChangeDate: null,
           requirePasswordChangeFlag: false,
-          status:  'registered'
+          status: 'registered'
         });
 
         var where = {};
@@ -112,15 +112,15 @@ module.exports = function(dataLayer, dataAdapter) {
         });
 
         testUserValues(modelFromDatabase, {
-          firstName:  'test',
-          lastName:  'user',
-          email:  'test.user@example.com',
-          username:  'test.user',
-          password:  'password',
-          updatedTimestamp:  null,
-          lastPasswordChangeDate:  null,
+          firstName: 'test',
+          lastName: 'user',
+          email: 'test.user@example.com',
+          username: 'test.user',
+          password: 'password',
+          updatedTimestamp: null,
+          lastPasswordChangeDate: null,
           requirePasswordChangeFlag: false,
-          status:  'registered'
+          status: 'registered'
         });
 
         expect(modelFromDatabase.id).to.be.at.least(5);
@@ -141,16 +141,16 @@ module.exports = function(dataLayer, dataAdapter) {
 
         testUserValues(model, {
           id: 3,
-          firstName:  'John',
-          lastName:  'Doe2',
-          email:  'john.doe2@example.com',
-          username:  'john.doe2',
-          password:  'password',
-          createdTimestamp:  '2014-05-17T19:51:49.000Z',
-          updatedTimestamp:  null,
-          lastPasswordChangeDate:  null,
+          firstName: 'John',
+          lastName: 'Doe2',
+          email: 'john.doe2@example.com',
+          username: 'john.doe2',
+          password: 'password',
+          createdTimestamp: '2014-05-17T19:51:49.000Z',
+          updatedTimestamp: null,
+          lastPasswordChangeDate: null,
           requirePasswordChangeFlag: true,
-          status:  'active'
+          status: 'active'
         });
 
         var where = {};
@@ -161,15 +161,15 @@ module.exports = function(dataLayer, dataAdapter) {
 
         testUserValues(modelFromDatabase, {
           id: 3,
-          firstName:  'John',
-          lastName:  'Doe2',
-          email:  'john.doe2@example.com',
-          username:  'john.doe2',
-          password:  'password',
-          createdTimestamp:  '2014-05-17T19:51:49.000Z',
-          lastPasswordChangeDate:  null,
+          firstName: 'John',
+          lastName: 'Doe2',
+          email: 'john.doe2@example.com',
+          username: 'john.doe2',
+          password: 'password',
+          createdTimestamp: '2014-05-17T19:51:49.000Z',
+          lastPasswordChangeDate: null,
           requirePasswordChangeFlag: true,
-          status:  'active'
+          status: 'active'
         });
 
         expect(moment(modelFromDatabase.updatedTimestamp).format('X') >= start).to.be.true;
@@ -262,16 +262,16 @@ module.exports = function(dataLayer, dataAdapter) {
 
         testUserValues(relationalModel, {
           id:  1,
-          firstName:  'John',
-          lastName:  'Doe',
-          email:  'john.doe@example.com',
-          username:  'john.doe',
-          password:  'password',
-          createdTimestamp:  '2014-05-17T19:50:15.000Z',
-          updatedTimestamp:  null,
-          lastPasswordChangeDate:  null,
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john.doe@example.com',
+          username: 'john.doe',
+          password: 'password',
+          createdTimestamp: '2014-05-17T19:50:15.000Z',
+          updatedTimestamp: null,
+          lastPasswordChangeDate: null,
           requirePasswordChangeFlag: true,
-          status:  'registered'
+          status: 'registered'
         });
       });
 
@@ -369,7 +369,6 @@ module.exports = function(dataLayer, dataAdapter) {
           lastName: 'Doe',
           email: 'john.doe@example.com',
           username: 'john.doe',
-          password: 'password',
           createdTimestamp: "2014-05-17T19:50:15.000Z",
           updatedTimestamp: null,
           lastPasswordChangeDate: null,
@@ -417,7 +416,6 @@ module.exports = function(dataLayer, dataAdapter) {
           lastName: 'Doe',
           email: 'john.doe@example.com',
           username: 'john.doe',
-          password: 'password',
           createdTimestamp: "2014-05-17T19:50:15.000Z",
           updatedTimestamp: null,
           lastPasswordChangeDate: null,
@@ -456,7 +454,6 @@ module.exports = function(dataLayer, dataAdapter) {
           lastName: 'Doe',
           email: 'john.doe@example.com',
           username: 'john.doe',
-          password: 'password',
           createdTimestamp: "2014-05-17T19:50:15.000Z",
           updatedTimestamp: null,
           lastPasswordChangeDate: null,
@@ -479,10 +476,10 @@ module.exports = function(dataLayer, dataAdapter) {
           email: 'test.user@example.com',
           username: 'test.user',
           password: 'password',
-          updatedTimestamp:  null,
-          lastPasswordChangeDate:  null,
+          updatedTimestamp: null,
+          lastPasswordChangeDate: null,
           requirePasswordChangeFlag: false,
-          status:  'registered'
+          status: 'registered'
         });
 
         expect(model.toJSON()).to.deep.equal({
@@ -491,12 +488,11 @@ module.exports = function(dataLayer, dataAdapter) {
           lastName: 'user',
           email: 'test.user@example.com',
           username: 'test.user',
-          password: 'password',
-          createdTimestamp:  null,
-          updatedTimestamp:  null,
-          lastPasswordChangeDate:  null,
+          createdTimestamp: null,
+          updatedTimestamp: null,
+          lastPasswordChangeDate: null,
           requirePasswordChangeFlag: false,
-          status:  'registered'
+          status: 'registered'
         });
       });
 
@@ -508,11 +504,10 @@ module.exports = function(dataLayer, dataAdapter) {
           lastName: 'user',
           email: 'test.user@example.com',
           username: 'test.user',
-          password: 'password',
-          updatedTimestamp:  null,
-          lastPasswordChangeDate:  null,
+          updatedTimestamp: null,
+          lastPasswordChangeDate: null,
           requirePasswordChangeFlag: false,
-          status:  'registered'
+          status: 'registered'
         });
 
         expect(model.toJSON()).to.deep.equal({
@@ -521,12 +516,11 @@ module.exports = function(dataLayer, dataAdapter) {
           lastName: 'user',
           email: 'test.user@example.com',
           username: 'test.user',
-          password: 'password',
-          createdTimestamp:  null,
-          updatedTimestamp:  null,
-          lastPasswordChangeDate:  null,
+          createdTimestamp: null,
+          updatedTimestamp: null,
+          lastPasswordChangeDate: null,
           requirePasswordChangeFlag: false,
-          status:  'registered'
+          status: 'registered'
         });
       });
 
@@ -544,79 +538,79 @@ module.exports = function(dataLayer, dataAdapter) {
 
       it('should be able to get all data store values', function*() {
         var model = dataLayer.user.create({
-          firstName:  'test',
-          lastName:  'user',
-          email:  'test.user@example.com',
-          username:  'test.user',
-          password:  'password',
-          updatedTimestamp:  '13:24:35 12/23/10',
+          firstName: 'test',
+          lastName: 'user',
+          email: 'test.user@example.com',
+          username: 'test.user',
+          password: 'password',
+          updatedTimestamp: '13:24:35 12/23/10',
           lastPasswordChangeDate: '13:24:35 1/12/11',
           requirePasswordChangeFlag: false,
-          status:  'registered'
+          status: 'registered'
         });
 
         expect(model._getDataStoreValues(dataAdapter._dataConverters)).to.deep.equal({
           id: null,
-          firstName:  'test',
-          lastName:  'user',
-          email:  'test.user@example.com',
-          username:  'test.user',
-          password:  'password',
-          createdTimestamp:  null,
-          updatedTimestamp:  '2010-12-23 13:24:35',
-          lastPasswordChangeDate:  '2011-01-12',
+          firstName: 'test',
+          lastName: 'user',
+          email: 'test.user@example.com',
+          username: 'test.user',
+          password: 'password',
+          createdTimestamp: null,
+          updatedTimestamp: '2010-12-23 13:24:35',
+          lastPasswordChangeDate: '2011-01-12',
           requirePasswordChangeFlag: 0,
-          status:  'registered'
+          status: 'registered'
         });
       });
 
       it('should be able to get insert sql values', function*() {
         var model = dataLayer.user.create({
-          firstName:  'test',
-          lastName:  'user',
-          email:  'test.user@example.com',
-          username:  'test.user',
-          password:  'password',
-          updatedTimestamp:  '13:24:35 12/23/10',
-          lastPasswordChangeDate:  '13:24:35 1/12/11',
+          firstName: 'test',
+          lastName: 'user',
+          email: 'test.user@example.com',
+          username: 'test.user',
+          password: 'password',
+          updatedTimestamp: '13:24:35 12/23/10',
+          lastPasswordChangeDate: '13:24:35 1/12/11',
           requirePasswordChangeFlag: false,
-          status:  'registered'
+          status: 'registered'
         });
 
         expect(model._getInsertDataStoreValues(dataAdapter._dataConverters)).to.deep.equal({
-          firstName:  'test',
-          lastName:  'user',
-          email:  'test.user@example.com',
-          username:  'test.user',
-          password:  'password',
-          lastPasswordChangeDate:  '2011-01-12',
+          firstName: 'test',
+          lastName: 'user',
+          email: 'test.user@example.com',
+          username: 'test.user',
+          password: 'password',
+          lastPasswordChangeDate: '2011-01-12',
           requirePasswordChangeFlag: 0,
-          status:  'registered'
+          status: 'registered'
         });
       });
 
       it('should be able to get update sql values', function*() {
         var model = dataLayer.user.create({
-          firstName:  'test',
-          lastName:  'user',
-          email:  'test.user@example.com',
-          username:  'test.user',
-          password:  'password',
-          updatedTimestamp:  '13:24:35 12/23/10',
-          lastPasswordChangeDate:  '13:24:35 1/12/11',
+          firstName: 'test',
+          lastName: 'user',
+          email: 'test.user@example.com',
+          username: 'test.user',
+          password: 'password',
+          updatedTimestamp: '13:24:35 12/23/10',
+          lastPasswordChangeDate: '13:24:35 1/12/11',
           requirePasswordChangeFlag: false,
-          status:  'registered'
+          status: 'registered'
         });
 
         expect(model._getUpdateDataStoreValues(dataAdapter._dataConverters)).to.deep.equal({
-          firstName:  'test',
-          email:  'test.user@example.com',
-          username:  'test.user',
-          password:  'password',
-          updatedTimestamp:  '2010-12-23 13:24:35',
-          lastPasswordChangeDate:  '2011-01-12',
+          firstName: 'test',
+          email: 'test.user@example.com',
+          username: 'test.user',
+          password: 'password',
+          updatedTimestamp: '2010-12-23 13:24:35',
+          lastPasswordChangeDate: '2011-01-12',
           requirePasswordChangeFlag: 0,
-          status:  'registered'
+          status: 'registered'
         });
       });
     });
@@ -640,15 +634,15 @@ module.exports = function(dataLayer, dataAdapter) {
             yield model.save();
 
             testUserValues(model, {
-              firstName:  'before-test',
-              lastName:  'user',
-              email:  'test.user@example.com',
-              username:  'test.user',
-              password:  'password',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
+              firstName: 'before-test',
+              lastName: 'user',
+              email: 'test.user@example.com',
+              username: 'test.user',
+              password: 'password',
+              updatedTimestamp: null,
+              lastPasswordChangeDate: null,
               requirePasswordChangeFlag: false,
-              status:  'registered'
+              status: 'registered'
             });
 
             var where = {};
@@ -658,15 +652,15 @@ module.exports = function(dataLayer, dataAdapter) {
             });
 
             testUserValues(modelFromDatabase, {
-              firstName:  'before-test',
-              lastName:  'user',
-              email:  'test.user@example.com',
-              username:  'test.user',
-              password:  'password',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
+              firstName: 'before-test',
+              lastName: 'user',
+              email: 'test.user@example.com',
+              username: 'test.user',
+              password: 'password',
+              updatedTimestamp: null,
+              lastPasswordChangeDate: null,
               requirePasswordChangeFlag: false,
-              status:  'registered'
+              status: 'registered'
             });
 
             expect(modelFromDatabase.id).to.be.at.least(5);
@@ -712,15 +706,15 @@ module.exports = function(dataLayer, dataAdapter) {
             expect(yield model.save()).to.be.false;
 
             testUserValues(model, {
-              firstName:  'before-test',
-              lastName:  'user',
-              email:  'test.user@example.com',
-              username:  'test.user',
-              password:  'password',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
+              firstName: 'before-test',
+              lastName: 'user',
+              email: 'test.user@example.com',
+              username: 'test.user',
+              password: 'password',
+              updatedTimestamp: null,
+              lastPasswordChangeDate: null,
               requirePasswordChangeFlag: false,
-              status:  'registered'
+              status: 'registered'
             });
             expect(model.id).to.null;
           });
@@ -760,15 +754,15 @@ module.exports = function(dataLayer, dataAdapter) {
             yield model.save();
 
             testUserValues(model, {
-              firstName:  'after-test',
-              lastName:  'user',
-              email:  'test.user@example.com',
-              username:  'test.user',
-              password:  'password',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
+              firstName: 'after-test',
+              lastName: 'user',
+              email: 'test.user@example.com',
+              username: 'test.user',
+              password: 'password',
+              updatedTimestamp: null,
+              lastPasswordChangeDate: null,
               requirePasswordChangeFlag: false,
-              status:  'registered'
+              status: 'registered'
             });
 
             var where = {};
@@ -778,15 +772,15 @@ module.exports = function(dataLayer, dataAdapter) {
             });
 
             testUserValues(modelFromDatabase, {
-              firstName:  'test',
-              lastName:  'user',
-              email:  'test.user@example.com',
-              username:  'test.user',
-              password:  'password',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
+              firstName: 'test',
+              lastName: 'user',
+              email: 'test.user@example.com',
+              username: 'test.user',
+              password: 'password',
+              updatedTimestamp: null,
+              lastPasswordChangeDate: null,
               requirePasswordChangeFlag: false,
-              status:  'registered'
+              status: 'registered'
             });
 
             expect(modelFromDatabase.id).to.be.at.least(5);
@@ -813,16 +807,16 @@ module.exports = function(dataLayer, dataAdapter) {
 
             testUserValues(model, {
               id: 3,
-              firstName:  'before-John',
-              lastName:  'Doe2',
-              email:  'john.doe2@example.com',
-              username:  'john.doe2',
-              password:  'password',
-              createdTimestamp:  '2014-05-17T19:51:49.000Z',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
+              firstName: 'before-John',
+              lastName: 'Doe2',
+              email: 'john.doe2@example.com',
+              username: 'john.doe2',
+              password: 'password',
+              createdTimestamp: '2014-05-17T19:51:49.000Z',
+              updatedTimestamp: null,
+              lastPasswordChangeDate: null,
               requirePasswordChangeFlag: true,
-              status:  'active'
+              status: 'active'
             });
 
             var where = {};
@@ -833,15 +827,15 @@ module.exports = function(dataLayer, dataAdapter) {
 
             testUserValues(modelFromDatabase, {
               id: 3,
-              firstName:  'before-John',
-              lastName:  'Doe2',
-              email:  'john.doe2@example.com',
-              username:  'john.doe2',
-              password:  'password',
-              createdTimestamp:  '2014-05-17T19:51:49.000Z',
-              lastPasswordChangeDate:  null,
+              firstName: 'before-John',
+              lastName: 'Doe2',
+              email: 'john.doe2@example.com',
+              username: 'john.doe2',
+              password: 'password',
+              createdTimestamp: '2014-05-17T19:51:49.000Z',
+              lastPasswordChangeDate: null,
               requirePasswordChangeFlag: true,
-              status:  'active'
+              status: 'active'
             });
 
             expect(moment(modelFromDatabase.updatedTimestamp).format('X') >= start).to.be.true;
@@ -887,16 +881,16 @@ module.exports = function(dataLayer, dataAdapter) {
 
             testUserValues(model, {
               id: 3,
-              firstName:  'before-John',
-              lastName:  'Doe2',
-              email:  'john.doe2@example.com',
-              username:  'john.doe2',
-              password:  'password',
-              createdTimestamp:  '2014-05-17T19:51:49.000Z',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
+              firstName: 'before-John',
+              lastName: 'Doe2',
+              email: 'john.doe2@example.com',
+              username: 'john.doe2',
+              password: 'password',
+              createdTimestamp: '2014-05-17T19:51:49.000Z',
+              updatedTimestamp: null,
+              lastPasswordChangeDate: null,
               requirePasswordChangeFlag: true,
-              status:  'active'
+              status: 'active'
             });
 
             var where = {};
@@ -907,16 +901,16 @@ module.exports = function(dataLayer, dataAdapter) {
 
             testUserValues(modelFromDatabase, {
               id: 3,
-              firstName:  'John',
-              lastName:  'Doe2',
-              email:  'john.doe2@example.com',
-              username:  'john.doe2',
-              password:  'password',
-              createdTimestamp:  '2014-05-17T19:51:49.000Z',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
+              firstName: 'John',
+              lastName: 'Doe2',
+              email: 'john.doe2@example.com',
+              username: 'john.doe2',
+              password: 'password',
+              createdTimestamp: '2014-05-17T19:51:49.000Z',
+              updatedTimestamp: null,
+              lastPasswordChangeDate: null,
               requirePasswordChangeFlag: false,
-              status:  'active'
+              status: 'active'
             });
           });
 
@@ -958,16 +952,16 @@ module.exports = function(dataLayer, dataAdapter) {
 
             testUserValues(model, {
               id: 3,
-              firstName:  'after-John',
-              lastName:  'Doe2',
-              email:  'john.doe2@example.com',
-              username:  'john.doe2',
-              password:  'password',
-              createdTimestamp:  '2014-05-17T19:51:49.000Z',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
+              firstName: 'after-John',
+              lastName: 'Doe2',
+              email: 'john.doe2@example.com',
+              username: 'john.doe2',
+              password: 'password',
+              createdTimestamp: '2014-05-17T19:51:49.000Z',
+              updatedTimestamp: null,
+              lastPasswordChangeDate: null,
               requirePasswordChangeFlag: true,
-              status:  'active'
+              status: 'active'
             });
 
             var where = {};
@@ -978,15 +972,15 @@ module.exports = function(dataLayer, dataAdapter) {
 
             testUserValues(modelFromDatabase, {
               id: 3,
-              firstName:  'John',
-              lastName:  'Doe2',
-              email:  'john.doe2@example.com',
-              username:  'john.doe2',
-              password:  'password',
-              createdTimestamp:  '2014-05-17T19:51:49.000Z',
-              lastPasswordChangeDate:  null,
+              firstName: 'John',
+              lastName: 'Doe2',
+              email: 'john.doe2@example.com',
+              username: 'john.doe2',
+              password: 'password',
+              createdTimestamp: '2014-05-17T19:51:49.000Z',
+              lastPasswordChangeDate: null,
               requirePasswordChangeFlag: true,
-              status:  'active'
+              status: 'active'
             });
 
             expect(moment(modelFromDatabase.updatedTimestamp).format('X') >= start).to.be.true;

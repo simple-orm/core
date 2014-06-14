@@ -1,4 +1,5 @@
 # master
+- added `excludeJson` property configuration option (#20)
 - renamed property configuration option `exclude` to `excludeSave` (#21)
 - model's `beforeRemove` hook now passes the abort callback (#18)
 - if a hook aborts the action, any hooks that would have executed after are no longer executed (#22)

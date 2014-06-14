@@ -40,7 +40,8 @@ model.define('User2', 'OrmTest', 'Users', {
   },
   password: {
     column: 'password',
-    type: 'string'
+    type: 'string',
+    excludeJson: true
   },
   createdTimestamp: {
     column: 'createdTimestamp',

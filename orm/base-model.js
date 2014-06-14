@@ -146,7 +146,9 @@ module.exports = function() {
       var json = {};
 
       _.forEach(this._schema, function(value, key) {
-        json[key] = this[key];
+        if(value.excludeJson !== true) {
+          json[key] = this[key];
+        }
       }, this);
 
       return json;

@@ -218,6 +218,7 @@ The forth parameter are the property configurations.  This is used to map the ta
  - `insert`
  - `update`
  - `both`
+- `excludeJson (boolean)`: Whether or not to exclude this property when converting model to JSON
 
 Please note that you can add any arbitrary property to the configure.  This is useful so plugin can provide there own configurations per model property if needed (like the [validate plugin](https://github.com/simple-orm/validate) does).
 

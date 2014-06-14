@@ -26,16 +26,16 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
 
         testUserValues(model, {
           id:  undefined,
-          firstName:  'test',
-          lastName:  'user',
-          email:  'test.user@example.com',
-          username:  'test.user',
-          password:  'password',
+          firstName: 'test',
+          lastName: 'user',
+          email: 'test.user@example.com',
+          username: 'test.user',
+          password: 'password',
           createdTimestamp:  undefined,
-          updatedTimestamp:  null,
-          lastPasswordChangeDate:  null,
+          updatedTimestamp: null,
+          lastPasswordChangeDate: null,
           requirePasswordChangeFlag: false,
-          status:  'registered'
+          status: 'registered'
         });
       });
     });
@@ -50,16 +50,16 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
 
         testUserValues(model, {
           id:  1,
-          firstName:  'John',
-          lastName:  'Doe',
-          email:  'john.doe@example.com',
-          username:  'john.doe',
-          password:  'password',
-          createdTimestamp:  '2014-05-17T19:50:15.000Z',
-          updatedTimestamp:  null,
-          lastPasswordChangeDate:  null,
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john.doe@example.com',
+          username: 'john.doe',
+          password: 'password',
+          createdTimestamp: '2014-05-17T19:50:15.000Z',
+          updatedTimestamp: null,
+          lastPasswordChangeDate: null,
           requirePasswordChangeFlag: true,
-          status:  'registered'
+          status: 'registered'
         });
       });
 
@@ -73,30 +73,30 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
         expect(models.length).to.equal(2);
         testUserValues(models[0], {
           id:  1,
-          firstName:  'John',
-          lastName:  'Doe',
-          email:  'john.doe@example.com',
-          username:  'john.doe',
-          password:  'password',
-          createdTimestamp:  '2014-05-17T19:50:15.000Z',
-          updatedTimestamp:  null,
-          lastPasswordChangeDate:  null,
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john.doe@example.com',
+          username: 'john.doe',
+          password: 'password',
+          createdTimestamp: '2014-05-17T19:50:15.000Z',
+          updatedTimestamp: null,
+          lastPasswordChangeDate: null,
           requirePasswordChangeFlag: true,
-          status:  'registered'
+          status: 'registered'
         });
 
         testUserValues(models[1], {
           id:  3,
-          firstName:  'John',
-          lastName:  'Doe2',
-          email:  'john.doe2@example.com',
-          username:  'john.doe2',
-          password:  'password',
-          createdTimestamp:  '2014-05-17T19:51:49.000Z',
-          updatedTimestamp:  null,
-          lastPasswordChangeDate:  null,
+          firstName: 'John',
+          lastName: 'Doe2',
+          email: 'john.doe2@example.com',
+          username: 'john.doe2',
+          password: 'password',
+          createdTimestamp: '2014-05-17T19:51:49.000Z',
+          updatedTimestamp: null,
+          lastPasswordChangeDate: null,
           requirePasswordChangeFlag: false,
-          status:  'active'
+          status: 'active'
         });
       });
     });
@@ -182,7 +182,7 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
       });
     });
 
-    describe.only('hooks', function() {
+    describe('hooks', function() {
       beforeEach(function() {
         dataLayer.user.removeHook('beforeFind[test]');
         dataLayer.user.removeHook('beforeFind[test2]');
@@ -207,16 +207,16 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
 
             testUserValues(model, {
               id:  1,
-              firstName:  'John',
-              lastName:  'Doe',
-              email:  'john.doe@example.com',
-              username:  'john.doe',
-              password:  'password',
-              createdTimestamp:  '2014-05-17T19:50:15.000Z',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
+              firstName: 'John',
+              lastName: 'Doe',
+              email: 'john.doe@example.com',
+              username: 'john.doe',
+              password: 'password',
+              createdTimestamp: '2014-05-17T19:50:15.000Z',
+              updatedTimestamp: null,
+              lastPasswordChangeDate: null,
               requirePasswordChangeFlag: true,
-              status:  'registered'
+              status: 'registered'
             });
           });
 
@@ -286,16 +286,16 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
 
             testUserValues(model, {
               id:  1,
-              firstName:  'John-after',
-              lastName:  'Doe',
-              email:  'john.doe@example.com',
-              username:  'john.doe',
-              password:  'password',
-              createdTimestamp:  '2014-05-17T19:50:15.000Z',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
+              firstName: 'John-after',
+              lastName: 'Doe',
+              email: 'john.doe@example.com',
+              username: 'john.doe',
+              password: 'password',
+              createdTimestamp: '2014-05-17T19:50:15.000Z',
+              updatedTimestamp: null,
+              lastPasswordChangeDate: null,
               requirePasswordChangeFlag: true,
-              status:  'registered'
+              status: 'registered'
             });
           });
         });
@@ -314,30 +314,30 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
 
             testUserValues(models[0], {
               id:  1,
-              firstName:  'John',
-              lastName:  'Doe',
-              email:  'john.doe@example.com',
-              username:  'john.doe',
-              password:  'password',
-              createdTimestamp:  '2014-05-17T19:50:15.000Z',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
+              firstName: 'John',
+              lastName: 'Doe',
+              email: 'john.doe@example.com',
+              username: 'john.doe',
+              password: 'password',
+              createdTimestamp: '2014-05-17T19:50:15.000Z',
+              updatedTimestamp: null,
+              lastPasswordChangeDate: null,
               requirePasswordChangeFlag: true,
-              status:  'registered'
+              status: 'registered'
             });
 
             testUserValues(models[1], {
               id:  3,
-              firstName:  'John',
-              lastName:  'Doe2',
-              email:  'john.doe2@example.com',
-              username:  'john.doe2',
-              password:  'password',
-              createdTimestamp:  '2014-05-17T19:51:49.000Z',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
+              firstName: 'John',
+              lastName: 'Doe2',
+              email: 'john.doe2@example.com',
+              username: 'john.doe2',
+              password: 'password',
+              createdTimestamp: '2014-05-17T19:51:49.000Z',
+              updatedTimestamp: null,
+              lastPasswordChangeDate: null,
               requirePasswordChangeFlag: false,
-              status:  'active'
+              status: 'active'
             });
           });
 
@@ -409,16 +409,16 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
             expect(models.length).to.equal(1);
             testUserValues(models[0], {
               id:  1,
-              firstName:  'John',
-              lastName:  'Doe',
-              email:  'john.doe@example.com',
-              username:  'john.doe',
-              password:  'password',
-              createdTimestamp:  '2014-05-17T19:50:15.000Z',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
+              firstName: 'John',
+              lastName: 'Doe',
+              email: 'john.doe@example.com',
+              username: 'john.doe',
+              password: 'password',
+              createdTimestamp: '2014-05-17T19:50:15.000Z',
+              updatedTimestamp: null,
+              lastPasswordChangeDate: null,
               requirePasswordChangeFlag: true,
-              status:  'registered'
+              status: 'registered'
             });
           });
         });

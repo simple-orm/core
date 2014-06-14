@@ -19,16 +19,16 @@ module.exports = function(dataLayer, dataAdapter) {
 
         testUserValues(model, {
           id:  3,
-          firstName:  'John',
-          lastName:  'Doe2',
-          email:  'john.doe2@example.com',
-          username:  'john.doe2',
-          password:  'password',
-          createdTimestamp:  '2014-05-17T19:51:49.000Z',
-          updatedTimestamp:  null,
-          lastPasswordChangeDate:  null,
+          firstName: 'John',
+          lastName: 'Doe2',
+          email: 'john.doe2@example.com',
+          username: 'john.doe2',
+          password: 'password',
+          createdTimestamp: '2014-05-17T19:51:49.000Z',
+          updatedTimestamp: null,
+          lastPasswordChangeDate: null,
           requirePasswordChangeFlag: false,
-          status:  'active'
+          status: 'active'
         });
       });
     });
