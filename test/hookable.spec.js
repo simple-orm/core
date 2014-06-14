@@ -17,6 +17,22 @@ describe('hookable', function() {
     };
   });
 
+  it('should be able to apply a hook', function*() {
+    hookableTest.hook('test1[test]', function(data) {
+      data.test1 += 1;
+      data.test2 += 1;
+    });
+
+    hookableTest.test1();
+
+    hookableTest.removeHook('test1[test]');
+
+    expect(myObject).to.deep.equal({
+      test1: 2,
+      test2: 3
+    });
+  });
+
   it('should be able to remove hooks', function*() {
     hookableTest.hook('test1[test]', function(data) {
       data.test1 += 1;
@@ -50,6 +66,27 @@ describe('hookable', function() {
     expect(myObject).to.deep.equal({
       test1: 4,
       test2: 5
+    });
+  });
+
+  it('should be able to remove multiple hooks', function*() {
+    hookableTest.hook('test1[test]', function(data) {
+      data.test1 += 1;
+      data.test2 += 1;
+    });
+    hookableTest.hook('test1[test2]', function(data) {
+      data.test1 += 2;
+      data.test2 += 2;
+    });
+
+    hookableTest.removeHook('test1[test]');
+    hookableTest.removeHook('test1[test2]');
+
+    hookableTest.test1();
+
+    expect(myObject).to.deep.equal({
+      test1: 1,
+      test2: 2
     });
   });
 

@@ -79,21 +79,30 @@ module.exports = function(model, dataAdapter) {
         criteria: criteria
       };
 
-      this.runHooks('beforeFind', [this, options, function(returnValue) {
-        abort = true;
+      try {
+        this.runHooks('beforeFind', [this, options, function(returnValue) {
+          abort = true;
 
-        if(returnValue) {
-          abortValue = returnValue;
+          if(returnValue) {
+            abortValue = returnValue;
+          }
+
+          throw 'error to prevent other hooks from executing';
+        }]);
+
+        if(abort === false) {
+          this._dataAdapter.find(model, options.criteria, this.create).then((function(results) {
+            this.runHooks('afterFind', [this, results]);
+            defer.resolve(results);
+          }).bind(this), function(error) {
+            defer.reject(error);
+          });
         }
-      }]);
-
-      if(abort === false) {
-        this._dataAdapter.find(model, options.criteria, this.create).then((function(results) {
-          this.runHooks('afterFind', [this, results]);
-          defer.resolve(results);
-        }).bind(this), function(error) {
-          defer.reject(error);
-        });
+      } catch(exception) {
+        //any other execption needs to bubble up, this exception is expected
+        if(exception !== 'error to prevent other hooks from executing') {
+          throw exception;
+        }
       }
 
       if(abort === true) {
@@ -112,21 +121,30 @@ module.exports = function(model, dataAdapter) {
         criteria: criteria
       };
 
-      this.runHooks('beforeFindAll', [this, options, function(returnValue) {
-        abort = true;
+      try {
+        this.runHooks('beforeFindAll', [this, options, function(returnValue) {
+          abort = true;
 
-        if(returnValue) {
-          abortValue = returnValue;
+          if(returnValue) {
+            abortValue = returnValue;
+          }
+
+          throw 'error to prevent other hooks from executing';
+        }]);
+
+        if(abort === false) {
+          this._dataAdapter.findAll(model, options.criteria, this.create).then((function(results) {
+            this.runHooks('afterFindAll', [this, results]);
+            defer.resolve(results);
+          }).bind(this), function(error) {
+            defer.reject(error);
+          });
         }
-      }]);
-
-      if(abort === false) {
-        this._dataAdapter.findAll(model, options.criteria, this.create).then((function(results) {
-          this.runHooks('afterFindAll', [this, results]);
-          defer.resolve(results);
-        }).bind(this), function(error) {
-          defer.reject(error);
-        });
+      } catch(exception) {
+        //any other execption needs to bubble up, this exception is expected
+        if(exception !== 'error to prevent other hooks from executing') {
+          throw exception;
+        }
       }
 
       if(abort === true) {

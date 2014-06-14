@@ -35,11 +35,12 @@ module.exports = {
   removeHook: function(hookName) {
     var hookParts = getHookParts(hookName);
 
-    if(this._emitter) {
-      this._emitter.removeListener(hookParts.name, this._hooks[hookParts.name][hookParts.identifier]);
-    }
-
     if(this._hooks[hookParts.name] && this._hooks[hookParts.name][hookParts.identifier]) {
+
+      if(this._emitter) {
+        this._emitter.removeListener(hookParts.name, this._hooks[hookParts.name][hookParts.identifier]);
+      }
+
       delete this._hooks[hookParts.name][hookParts.identifier];
     }
   }

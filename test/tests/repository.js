@@ -182,7 +182,16 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
       });
     });
 
-    describe('hooks', function() {
+    describe.only('hooks', function() {
+      beforeEach(function() {
+        dataLayer.user.removeHook('beforeFind[test]');
+        dataLayer.user.removeHook('beforeFind[test2]');
+        dataLayer.user.removeHook('afterFind[test]');
+        dataLayer.user.removeHook('beforeFindAll[test]');
+        dataLayer.user.removeHook('beforeFindAll[test2]');
+        dataLayer.user.removeHook('afterFindAll[test]');
+      });
+
       describe('types', function() {
         describe('beforeFind', function() {
           it('single', function*() {
@@ -211,40 +220,31 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
             });
           });
 
-          it('multiple', function*() {
-            dataLayer.user.hook('beforeFind[test]', function(repository, data) {
-              data.criteria.where.firstName += 'h';
-            });
-            dataLayer.user.hook('beforeFind[test2]', function(repository, data) {
+          it('should not allow other hooks to be called if the abort callback is executed', function*() {
+            dataLayer.user.hook('beforeFind[test]', function(repository, data, abort) {
               data.criteria.where.firstName += 'n';
+              abort();
             });
+
+            dataLayer.user.hook('beforeFind[test2]', function(repository, data, abort) {
+              expect(false).to.be.true;
+            });
+
             var model = yield dataLayer.user.find({
               where: {
-                firstName: 'Jo'
+                firstName: 'Joh'
               }
             });
             dataLayer.user.removeHook('beforeFind[test]');
             dataLayer.user.removeHook('beforeFind[test2]');
 
-            testUserValues(model, {
-              id:  1,
-              firstName:  'John',
-              lastName:  'Doe',
-              email:  'john.doe@example.com',
-              username:  'john.doe',
-              password:  'password',
-              createdTimestamp:  '2014-05-17T19:50:15.000Z',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
-              requirePasswordChangeFlag: true,
-              status:  'registered'
-            });
+            expect(model).to.be.false;
           });
 
-          it('should abort search if hook calls the abort callback', function*() {
-            dataLayer.user.hook('beforeFind[test]', function(repository, data, abortCallback) {
+          it('should abort action if hook calls the abort callback', function*() {
+            dataLayer.user.hook('beforeFind[test]', function(repository, data, abort) {
               data.criteria.where.firstName += 'n';
-              abortCallback();
+              abort();
             });
             var model = yield dataLayer.user.find({
               where: {
@@ -257,9 +257,9 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
           });
 
           it('should allow hook to pass back a custom value if action is aborted', function*() {
-            dataLayer.user.hook('beforeFind[test]', function(repository, data, abortCallback) {
+            dataLayer.user.hook('beforeFind[test]', function(repository, data, abort) {
               data.criteria.where.firstName += 'n';
-              abortCallback('test');
+              abort('test');
             });
             var model = yield dataLayer.user.find({
               where: {
@@ -287,36 +287,6 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
             testUserValues(model, {
               id:  1,
               firstName:  'John-after',
-              lastName:  'Doe',
-              email:  'john.doe@example.com',
-              username:  'john.doe',
-              password:  'password',
-              createdTimestamp:  '2014-05-17T19:50:15.000Z',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
-              requirePasswordChangeFlag: true,
-              status:  'registered'
-            });
-          });
-
-          it('multiple', function*() {
-            dataLayer.user.hook('afterFind[test]', function(repository, model) {
-              model.firstName += '-after';
-            });
-            dataLayer.user.hook('afterFind[test2]', function(repository, model) {
-              model.firstName += '-after';
-            });
-            var model = yield dataLayer.user.find({
-              where: {
-                firstName: 'John'
-              }
-            });
-            dataLayer.user.removeHook('afterFind[test]');
-            dataLayer.user.removeHook('afterFind[test2]');
-
-            testUserValues(model, {
-              id:  1,
-              firstName:  'John-after-after',
               lastName:  'Doe',
               email:  'john.doe@example.com',
               username:  'john.doe',
@@ -371,54 +341,32 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
             });
           });
 
-          it('multiple', function*() {
-            dataLayer.user.hook('beforeFindAll[test]', function(repository, data) {
-              data.criteria.where.firstName += 'h';
-            });
-            dataLayer.user.hook('beforeFindAll[test2]', function(repository, data) {
+          it('should not allow other hooks to be called if the abort callback is executed', function*() {
+            dataLayer.user.hook('beforeFindAll[test]', function(repository, data, abort) {
               data.criteria.where.firstName += 'n';
+              abort();
             });
+
+            dataLayer.user.hook('beforeFindAll[test2]', function(repository, data, abort) {
+              expect(false).to.be.true;
+            });
+
             var models = yield dataLayer.user.findAll({
               where: {
-                firstName: 'Jo'
+                firstName: 'Joh'
               }
             });
+
             dataLayer.user.removeHook('beforeFindAll[test]');
             dataLayer.user.removeHook('beforeFindAll[test2]');
 
-            testUserValues(models[0], {
-              id:  1,
-              firstName:  'John',
-              lastName:  'Doe',
-              email:  'john.doe@example.com',
-              username:  'john.doe',
-              password:  'password',
-              createdTimestamp:  '2014-05-17T19:50:15.000Z',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
-              requirePasswordChangeFlag: true,
-              status:  'registered'
-            });
-
-            testUserValues(models[1], {
-              id:  3,
-              firstName:  'John',
-              lastName:  'Doe2',
-              email:  'john.doe2@example.com',
-              username:  'john.doe2',
-              password:  'password',
-              createdTimestamp:  '2014-05-17T19:51:49.000Z',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
-              requirePasswordChangeFlag: false,
-              status:  'active'
-            });
+            expect(models).to.be.false;
           });
 
-          it('should abort search if hook calls the abort callback', function*() {
-            dataLayer.user.hook('beforeFindAll[test]', function(repository, data, abortCallback) {
+          it('should abort action if hook calls the abort callback', function*() {
+            dataLayer.user.hook('beforeFindAll[test]', function(repository, data, abort) {
               data.criteria.where.firstName += 'n';
-              abortCallback();
+              abort();
             });
             var models = yield dataLayer.user.findAll({
               where: {
@@ -431,9 +379,9 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
           });
 
           it('should allow hook to pass back a custom value if action is aborted', function*() {
-            dataLayer.user.hook('beforeFindAll[test]', function(repository, data, abortCallback) {
+            dataLayer.user.hook('beforeFindAll[test]', function(repository, data, abort) {
               data.criteria.where.firstName += 'n';
-              abortCallback('test');
+              abort('test');
             });
             var models = yield dataLayer.user.findAll({
               where: {
@@ -457,38 +405,6 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
               }
             });
             dataLayer.user.removeHook('afterFindAll[test]');
-
-            expect(models.length).to.equal(1);
-            testUserValues(models[0], {
-              id:  1,
-              firstName:  'John',
-              lastName:  'Doe',
-              email:  'john.doe@example.com',
-              username:  'john.doe',
-              password:  'password',
-              createdTimestamp:  '2014-05-17T19:50:15.000Z',
-              updatedTimestamp:  null,
-              lastPasswordChangeDate:  null,
-              requirePasswordChangeFlag: true,
-              status:  'registered'
-            });
-          });
-
-          it('multiple', function*() {
-            dataLayer.user.hook('afterFindAll[test]', function(repository, models) {
-              models[1].firstName = 'test';
-            });
-            dataLayer.user.hook('afterFindAll[test2]', function(repository, models) {
-              expect(models[1].firstName).to.equal('test');
-              models.splice(1, 1);
-            });
-            var models = yield dataLayer.user.findAll({
-              where: {
-                firstName: 'John'
-              }
-            });
-            dataLayer.user.removeHook('afterFindAll[test]');
-            dataLayer.user.removeHook('afterFindAll[test2]');
 
             expect(models.length).to.equal(1);
             testUserValues(models[0], {
