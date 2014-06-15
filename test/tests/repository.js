@@ -429,8 +429,10 @@ module.exports = function(dataLayer, dataAdapter, userIdField, userEmailUserIdFi
       it('should throw error if data adapter does not pass interface checker', function*() {
         var err = "The passed in data adapter has the following issue:"
         + "\nMissing insert method"
+        + "\nMissing bulkInsert method"
         + "\nMissing update method"
         + "\nMissing remove method"
+        + "\nMissing bulkRemove method"
         + "\nMissing find method"
         + "\nMissing findAll method"
         + "\nMissing startTransaction method"

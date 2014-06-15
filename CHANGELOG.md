@@ -1,4 +1,5 @@
 # master
+- updated data adapter interface requirements
 - added `toArray()` method for collections
 
 # 0.5.1

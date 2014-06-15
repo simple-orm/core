@@ -8,8 +8,10 @@ var collectionFactory = require('./collection');
 
 interfaceChecker.define('SimpleOrmDataAdapter', [
   'insert:1',
+  'bulkInsert:1',
   'update:1',
   'remove:1',
+  'bulkRemove:1',
   'find:3',
   'findAll:3',
   'startTransaction',
