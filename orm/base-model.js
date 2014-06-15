@@ -302,7 +302,6 @@ module.exports = function() {
       return dataStoreValues;
     },
 
-    //refactor _getDataStorePrimaryKeyData
     _getDataStorePrimaryKeyData: function(dataConverters) {
       var dataStoreValues = this._getDataStoreValues(dataConverters);
       var data = {};

@@ -7,7 +7,6 @@ var model2;
 module.exports = function(dataLayer) {
   describe('collection', function() {
     beforeEach(function*() {
-      //TODO: investigate: even though I don't need to do this on each test, I can't seem to you yield with describe() so have to do this here
       var where1 = {};
       where1[dataLayer.user._model._primaryKeyColumns[0]] = 1;
       model1 = yield dataLayer.user.find({
