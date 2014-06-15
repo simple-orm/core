@@ -75,34 +75,44 @@ collection.clear = function() {
 };
 
 collection.toJSON = function() {
-  var json = [];
+  var json = null;
 
-  this._data.forEach(function(value, key) {
-    json.push(value.toJSON());
-  });
+  if(this._data.length > 0) {
+    json = [];
+
+    this._data.forEach(function(value, key) {
+      json.push(value.toJSON());
+    });
+  }
 
   return json;
 };
 
 collection.toJSONWithRelationships = function() {
   var defer = bluebird.defer();
-  var json = [];
+  var json = null;
   var applyArguments = Array.prototype.slice.call(arguments, 0);
   var callsLeft = this._data.length;
 
-  this._data.forEach(function(value, key) {
-    value.toJSONWithRelationships.apply(value, applyArguments).then(function(results) {
-      json.push(results);
+  if(this._data.length > 0) {
+    json = [];
 
-      callsLeft -= 1;
+    this._data.forEach(function(value, key) {
+      value.toJSONWithRelationships.apply(value, applyArguments).then(function(results) {
+        json.push(results);
 
-      if(callsLeft === 0) {
-        defer.resolve(json);
-      }
-    }, function(error) {
-      defer.reject(error);
+        callsLeft -= 1;
+
+        if(callsLeft === 0) {
+          defer.resolve(json);
+        }
+      }, function(error) {
+        defer.reject(error);
+      });
     });
-  });
+  } else {
+    defer.resolve(json);
+  }
 
   return defer.promise;
 };

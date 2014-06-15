@@ -209,6 +209,10 @@ module.exports = function(dataLayer) {
         }]);
       });
 
+      it('should return null when convert empty collection to JSON', function*() {
+        expect(collection.toJSON()).to.be.null;
+      });
+
       it('should be able to convert to JSON with relationships', function*() {
         collection.add([
           model1,
@@ -246,6 +250,10 @@ module.exports = function(dataLayer) {
             'user.update'
           ]
         }]);
+      });
+
+      it('should return null when convert empty collection to JSON with relationships', function*() {
+        expect(yield collection.toJSONWithRelationships('Permissions')).to.be.null;
       });
 
       it('should have a length property', function*() {

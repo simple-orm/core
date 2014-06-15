@@ -1,3 +1,6 @@
+# master
+- the collection's `toJSON()` and `toJSONWithRelationships()` methods now return null if the collection is empty
+
 # 0.5.0
 - added a collection object (#17)
 - fixed issue where if a call to the model's `toJSONWithRelationships()` method has no valid relationships passed, the promise would never get resolved
