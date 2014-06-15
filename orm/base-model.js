@@ -196,9 +196,9 @@ module.exports = function() {
 
           this[options.functionCall]().then(function(results) {
             //usng this weird syntax in order to make sure arrays of models are properly serialized=
-            var relationshipJson = JSON.parse(JSON.stringify(results));
+            var relationshipJson = results.toJSON();
 
-            if(_.isArray(options.options.jsonProperties) && options.options.jsonProperties.length > 0) {
+            if(relationshipJson && _.isArray(options.options.jsonProperties) && options.options.jsonProperties.length > 0) {
               var parsedData = _.isArray(relationshipJson) ? [] : {};
 
               if(options.options.jsonProperties.length === 1) {
