@@ -22,7 +22,7 @@ module.exports = function(dataLayer, dataAdapter) {
     describe('caching', function() {
       it('should automatically happen when retrieving', function*() {
         var where = {};
-        where[Object.keys(dataLayer.userDetail._model._primaryKeys)[0]]  = 1;
+        where[dataLayer.userDetail._model._primaryKeyColumns[0]]  = 1;
         var model = yield dataLayer.userDetail.find({
           where: where
         });
@@ -38,7 +38,7 @@ module.exports = function(dataLayer, dataAdapter) {
 
       it('should be able to clear all cache', function*() {
         var where = {};
-        where[Object.keys(dataLayer.userDetail._model._primaryKeys)[0]] = 1;
+        where[dataLayer.userDetail._model._primaryKeyColumns[0]] = 1;
         var model = yield dataLayer.userDetail.find({
           where: where
         });
@@ -55,7 +55,7 @@ module.exports = function(dataLayer, dataAdapter) {
 
       it('should be able to clear specific relationship cache', function*() {
         var where = {};
-        where[Object.keys(dataLayer.userDetail._model._primaryKeys)[0]] = 1;
+        where[dataLayer.userDetail._model._primaryKeyColumns[0]] = 1;
         var model = yield dataLayer.userDetail.find({
           where: where
         });
@@ -72,7 +72,7 @@ module.exports = function(dataLayer, dataAdapter) {
 
       it('should automatically clear all cache when saving model', function*() {
         var where = {};
-        where[Object.keys(dataLayer.userDetail._model._primaryKeys)[0]] = 1;
+        where[dataLayer.userDetail._model._primaryKeyColumns[0]] = 1;
         var model = yield dataLayer.userDetail.find({
           where: where
         });

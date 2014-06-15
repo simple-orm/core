@@ -8,9 +8,9 @@ var buildFindObject = function(value) {
 
   if(this._data.length > 0) {
     if(_.isObject(value)) {
-      find = value._getPrimaryKeyData();
+      find = value._getDataStorePrimaryKeyData();
     } else {
-      find[Object.keys(this._data[0]._primaryKeys)[0]] = value;
+      find[this._data[0]._primaryKeyColumns[0]] = value;
     }
   }
 

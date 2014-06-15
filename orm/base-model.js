@@ -22,7 +22,9 @@ module.exports = function() {
     _hooks: {},
     _relationships: {},
     define: function(modelName, database, table, schema) {
-      this._primaryKeys = {};
+      //this._primaryKeys = {};
+      this._primaryKeyColumns = [];
+      this._primaryKeyProperties = [];
       this._modelName = modelName;
       this._table = table;
       this._database = database;
@@ -35,7 +37,9 @@ module.exports = function() {
         this._selectColumns[value.column] = key;
 
         if(value.primaryKey === true) {
-          this._primaryKeys[value.column] = key;
+          //this._primaryKeys[value.column] = key;
+          this._primaryKeyColumns.push(value.column);
+          this._primaryKeyProperties.push(key);
 
           if(value.autoIncrement === true) {
             this._insertIdProperty = key;
@@ -298,12 +302,13 @@ module.exports = function() {
       return dataStoreValues;
     },
 
-    _getPrimaryKeyData: function(dataConverters) {
+    //refactor _getDataStorePrimaryKeyData
+    _getDataStorePrimaryKeyData: function(dataConverters) {
       var dataStoreValues = this._getDataStoreValues(dataConverters);
       var data = {};
 
-      _.forEach(this._primaryKeys, function(value, key) {
-        data[key] = dataStoreValues[key];
+      _.forEach(this._primaryKeyColumns, function(value) {
+        data[value] = dataStoreValues[value];
       });
 
       return data;
@@ -477,7 +482,7 @@ module.exports = function() {
 
               on[throughRepository._model._table + '.' + selfField] = this.id;
               on[throughRepository._model._table + '.' + relationField] = {
-                value: repository._model._table + '.' + Object.keys(repository._model._primaryKeys)[0],
+                value: repository._model._table + '.' + repository._model._primaryKeyColumns[0],
                 valueType: 'field'
               };
 
@@ -542,8 +547,7 @@ module.exports = function() {
             relationModels.forEach(function(relationModel) {
               var mapData = {};
               mapData[selfField] = selfId;
-              //TODO: make simplier
-              mapData[relationField] = relationModel[repository._model._primaryKeys[Object.keys(repository._model._primaryKeys)[0]]];
+              mapData[relationField] = relationModel[repository._model._primaryKeyProperties[0]];
               returnModels.push(options.through.create(mapData));
             });
 
@@ -556,8 +560,7 @@ module.exports = function() {
             };
 
             models.forEach(function(model) {
-              //TODO: make simplier
-              value.value.push(model[repository._model._primaryKeys[Object.keys(repository._model._primaryKeys)[0]]]);
+              value.value.push(model[repository._model._primaryKeyProperties[0]]);
             });
 
             return value;
@@ -570,7 +573,7 @@ module.exports = function() {
               };
 
               if(!_.isObject(data[0])) {
-                criteria.where[Object.keys(repository._model._primaryKeys)[0]] = {
+                criteria.where[repository._model._primaryKeyColumns[0]] = {
                   comparison: 'in',
                   value: data
                 };
@@ -580,7 +583,7 @@ module.exports = function() {
                   return defer.promise;
                 }
 
-                criteria.where[Object.keys(repository._model._primaryKeys)[0]] = buildCriteriaValue(data);
+                criteria.where[repository._model._primaryKeyColumns[0]] = buildCriteriaValue(data);
               }
 
               var searchOptions = {
@@ -656,8 +659,7 @@ module.exports = function() {
               var temp = [];
 
               data.forEach(function(model) {
-                //TODO: make simplier
-                var primaryKeyValue = model[repository._model._primaryKeys[Object.keys(repository._model._primaryKeys)[0]]];
+                var primaryKeyValue = model[repository._model._primaryKeyProperties[0]];
 
                 //if we can't find a primaryKeyValue, use null so that nothing in removed for this object
                 temp.push(primaryKeyValue || null);

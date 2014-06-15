@@ -9,13 +9,13 @@ module.exports = function(dataLayer) {
     beforeEach(function*() {
       //TODO: investigate: even though I don't need to do this on each test, I can't seem to you yield with describe() so have to do this here
       var where1 = {};
-      where1[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+      where1[dataLayer.user._model._primaryKeyColumns[0]] = 1;
       model1 = yield dataLayer.user.find({
         where: where1
       });
 
       var where2 = {};
-      where2[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 2;
+      where2[dataLayer.user._model._primaryKeyColumns[0]] = 2;
       model2 = yield dataLayer.user.find({
         where: where2
       });
@@ -142,13 +142,13 @@ module.exports = function(dataLayer) {
       var expectedOptions = {
         find: {}
       };
-      expectedOptions.find[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+      expectedOptions.find[dataLayer.user._model._primaryKeyColumns[0]] = 1;
 
       describe('beforeGetByPrimaryKey', function() {
         it('single', function*() {
           collection.hook('beforeGetByPrimaryKey[test]', function(collection, options) {
             expect(options).to.deep.equal(expectedOptions);
-            options.find[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 2;
+            options.find[dataLayer.user._model._primaryKeyColumns[0]] = 2;
           });
 
           collection.add([

@@ -34,7 +34,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
       it('should be `loaded` with new instance', function*() {
         var where = {};
-        where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+        where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
         var model = yield dataLayer.user.find({
           where: where
         });
@@ -44,7 +44,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
       it('should be `dirty` with instance that has unchanged data', function*() {
         var where = {};
-        where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+        where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
         var model = yield dataLayer.user.find({
           where: where
         });
@@ -108,7 +108,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
         });
 
         var where = {};
-        where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = model.id;
+        where[dataLayer.user._model._primaryKeyColumns[0]] = model.id;
         var modelFromDatabase = yield dataLayer.user.find({
           where: where
         });
@@ -133,7 +133,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
         var start = moment().format('X');
 
         var where = {};
-        where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+        where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
         var model = yield dataLayer.user.find({
           where: where
         });
@@ -156,7 +156,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
         });
 
         var where = {};
-        where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = model.id;
+        where[dataLayer.user._model._primaryKeyColumns[0]] = model.id;
         var modelFromDatabase = yield dataLayer.user.find({
           where: where
         });
@@ -179,7 +179,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
       it('should be able to delete an instance', function*() {
         var where = {};
-        where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+        where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
         var model = yield dataLayer.user.find({
           where: where
         });
@@ -187,7 +187,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
         expect(yield model.remove()).to.be.true;
 
         var where = {};
-        where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+        where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
         var model = yield dataLayer.user.find({
           where: where
         });
@@ -227,7 +227,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
       it('should be able to define a custom property getter', function*() {
         var where = {};
-        where[Object.keys(dataLayer.userEmailCustomGetter._model._primaryKeys)[0]] = 3;
+        where[dataLayer.userEmailCustomGetter._model._primaryKeyColumns[0]] = 3;
         var model = yield dataLayer.userEmailCustomGetter.find({
           where: where
         });
@@ -245,7 +245,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
       it('should be able to define a custom property setter', function*() {
         var where = {};
-        where[Object.keys(dataLayer.userEmailCustomSetter._model._primaryKeys)[0]] = 3;
+        where[dataLayer.userEmailCustomSetter._model._primaryKeyColumns[0]] = 3;
         var model = yield dataLayer.userEmailCustomSetter.find({
           where: where
         });
@@ -258,7 +258,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
         yield model.save();
 
         var where = {};
-        where[Object.keys(dataLayer.userEmailCustomSetter._model._primaryKeys)[0]] = 3;
+        where[dataLayer.userEmailCustomSetter._model._primaryKeyColumns[0]] = 3;
         var freshModel = yield dataLayer.userEmailCustomSetter.find({
           where: where
         });
@@ -333,7 +333,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
     describe('relationships', function() {
       it('should be able to define a hasOne relationship', function*() {
         var where = {};
-        where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+        where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
         var model = yield dataLayer.user.find({
           where: where
         });
@@ -347,7 +347,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
       it('should be able to define belongsTo relationship', function*() {
         var where = {};
-        where[Object.keys(dataLayer.userDetail._model._primaryKeys)[0]] = 1;
+        where[dataLayer.userDetail._model._primaryKeyColumns[0]] = 1;
         var model = yield dataLayer.userDetail.find({
           where: where
         });
@@ -371,7 +371,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
       it('should be able to define hasMany relationship', function*() {
         var where = {};
-        where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+        where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
         var model = yield dataLayer.user.find({
           where: where
         });
@@ -389,7 +389,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
       it('should be able to define hasMany relationship with through', function*() {
         var where = {};
-        where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+        where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
         var model = yield dataLayer.user.find({
           where: where
         });
@@ -416,19 +416,19 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
         beforeEach(function*() {
           var where = {};
-          where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+          where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
           model = yield dataLayer.user.find({
             where: where
           });
 
           var where2 = {};
-          where2[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 2;
+          where2[dataLayer.user._model._primaryKeyColumns[0]] = 2;
           permission1 = yield dataLayer.permission.find({
             where: where2
           });
 
           var where3 = {};
-          where3[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+          where3[dataLayer.user._model._primaryKeyColumns[0]] = 3;
           permission2 = yield dataLayer.permission.find({
             where: where3
           });
@@ -512,19 +512,19 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
         beforeEach(function*() {
           var where = {};
-          where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+          where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
           model = yield dataLayer.user.find({
             where: where
           });
 
           var where2 = {};
-          where2[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 2;
+          where2[dataLayer.user._model._primaryKeyColumns[0]] = 2;
           permission1 = yield dataLayer.permission.find({
             where: where2
           });
 
           var where3 = {};
-          where3[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+          where3[dataLayer.user._model._primaryKeyColumns[0]] = 3;
           permission2 = yield dataLayer.permission.find({
             where: where3
           });
@@ -594,7 +594,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
       it('should be able to define hasMany relationship with through model defining fields', function*() {
         var where = {};
-        where[Object.keys(dataLayer.user2._model._primaryKeys)[0]] = 3;
+        where[dataLayer.user2._model._primaryKeyColumns[0]] = 3;
         var model = yield dataLayer.user2.find({
           where: where
         });
@@ -624,7 +624,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
       it('should return null if a belongsTo does not link anyone (basically a "can belong to" type relationship)', function*() {
         var where = {};
-        where[Object.keys(dataLayer.userDetail._model._primaryKeys)[0]] = 5;
+        where[dataLayer.userDetail._model._primaryKeyColumns[0]] = 5;
         var model = yield dataLayer.userDetail.find({
           where: where
         });
@@ -636,7 +636,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
       it('should be able to convert to JSON with all relationship data', function*() {
         var where = {};
-        where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+        where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
         var model = yield dataLayer.user.find({
           where: where
         });
@@ -679,7 +679,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
       it('should be able to convert to JSON with specific relationship data', function*() {
         var where = {};
-        where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+        where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
         var model = yield dataLayer.user.find({
           where: where
         });
@@ -719,7 +719,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
       it('should be able to convert to JSON with 1 specific relationship data', function*() {
         var where = {};
-        where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+        where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
         var model = yield dataLayer.user.find({
           where: where
         });
@@ -746,7 +746,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
       it('should be able to convert to JSON with 1 specific relationship passed as string', function*() {
         var where = {};
-        where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+        where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
         var model = yield dataLayer.user.find({
           where: where
         });
@@ -771,7 +771,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
       it('should be able to convert to JSON with specific relationship data passed as multiple strings', function*() {
         var where = {};
-        where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+        where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
         var model = yield dataLayer.user.find({
           where: where
         });
@@ -863,12 +863,12 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
       it('should be able to get primary key data', function*() {
         var where = {};
-        where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+        where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
         var model = yield dataLayer.user.find({
           where: where
         });
 
-        expect(model._getPrimaryKeyData()).to.deep.equal({
+        expect(model._getDataStorePrimaryKeyData()).to.deep.equal({
           id: 3
         });
       });
@@ -983,7 +983,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
             });
 
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = model.id;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = model.id;
             var modelFromDatabase = yield dataLayer.user.find({
               where: where
             });
@@ -1103,7 +1103,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
             });
 
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = model.id;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = model.id;
             var modelFromDatabase = yield dataLayer.user.find({
               where: where
             });
@@ -1130,7 +1130,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
             var start = moment().format('X');
 
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1157,7 +1157,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
             });
 
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = model.id;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = model.id;
             var modelFromDatabase = yield dataLayer.user.find({
               where: where
             });
@@ -1180,7 +1180,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
           it('should not allow other hooks to be called if the abort callback is executed', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1203,7 +1203,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
             var start = moment().format('X');
 
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1231,7 +1231,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
             });
 
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = model.id;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = model.id;
             var modelFromDatabase = yield dataLayer.user.find({
               where: where
             });
@@ -1255,7 +1255,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
             var start = moment().format('X');
 
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1275,7 +1275,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
             var start = moment().format('X');
 
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1302,7 +1302,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
             });
 
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = model.id;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = model.id;
             var modelFromDatabase = yield dataLayer.user.find({
               where: where
             });
@@ -1327,7 +1327,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
         describe('beforeRemove', function() {
           it('single', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1338,7 +1338,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
             expect(yield model.remove()).to.be.true;
 
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1348,7 +1348,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
           it('should not allow other hooks to be called if the abort callback is executed', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1367,7 +1367,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
           it('should abort action if hook executes the abort callback', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1380,7 +1380,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
             expect(yield model.remove()).to.be.false;
 
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1390,7 +1390,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
           it('should allow hook to pass back a custom value if action is aborted', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1407,7 +1407,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
         describe('afterRemove', function() {
           it('single', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1418,7 +1418,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
             expect(yield model.remove()).to.be.true;
 
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1430,7 +1430,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
         describe('beforeGetRelationship (belongsTo)', function() {
           it('single', function*() {
             var where = {};
-            where[Object.keys(dataLayer.userDetail._model._primaryKeys)[0]] = 1;
+            where[dataLayer.userDetail._model._primaryKeyColumns[0]] = 1;
             var model = yield dataLayer.userDetail.find({
               where: where
             });
@@ -1444,7 +1444,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
           it('should not allow other hooks to be called if the abort callback is executed', function*() {
             var where = {};
-            where[Object.keys(dataLayer.userDetail._model._primaryKeys)[0]] = 1;
+            where[dataLayer.userDetail._model._primaryKeyColumns[0]] = 1;
             var model = yield dataLayer.userDetail.find({
               where: where
             });
@@ -1464,7 +1464,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
           it('should abort action if hook executes the abort callback', function*() {
             var where = {};
-            where[Object.keys(dataLayer.userDetail._model._primaryKeys)[0]] = 1;
+            where[dataLayer.userDetail._model._primaryKeyColumns[0]] = 1;
             var model = yield dataLayer.userDetail.find({
               where: where
             });
@@ -1480,7 +1480,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
           it('should allow hook to pass back a custom value if action is aborted', function*() {
             var where = {};
-            where[Object.keys(dataLayer.userDetail._model._primaryKeys)[0]] = 1;
+            where[dataLayer.userDetail._model._primaryKeyColumns[0]] = 1;
             var model = yield dataLayer.userDetail.find({
               where: where
             });
@@ -1498,7 +1498,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
         describe('afterGetRelationship (belongsTo)', function() {
           it('single', function*() {
             var where = {};
-            where[Object.keys(dataLayer.userDetail._model._primaryKeys)[0]] = 1;
+            where[dataLayer.userDetail._model._primaryKeyColumns[0]] = 1;
             var model = yield dataLayer.userDetail.find({
               where: where
             });
@@ -1517,7 +1517,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
         describe('beforeGetRelationship (hasOne)', function() {
           it('single', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1532,7 +1532,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
           it('should not allow other hooks to be called if the abort callback is executed', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1552,7 +1552,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
           it('should abort action if hook executes the abort callback', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1568,7 +1568,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
           it('should allow hook to pass back a custom value if action is aborted', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1586,7 +1586,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
         describe('afterGetRelationship (hasOne)', function() {
           it('single', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1606,7 +1606,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
         describe('beforeGetRelationship (hasMany)', function() {
           it('single', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1621,7 +1621,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
           it('should not allow other hooks to be called if the abort callback is executed', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1641,7 +1641,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
           it('should abort action if hook executes the abort callback', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1657,7 +1657,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
           it('should allow hook to pass back a custom value if action is aborted', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1675,7 +1675,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
         describe('afterGetRelationship (hasMany)', function() {
           it('single', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1695,7 +1695,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
         describe('beforeDetach', function() {
           it('single with primary key', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1731,13 +1731,13 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
           it('single with primary key', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
             var model = yield dataLayer.user.find({
               where: where
             });
 
             var where2 = {};
-            where2[Object.keys(dataLayer.permission._model._primaryKeys)[0]] = 1;
+            where2[dataLayer.permission._model._primaryKeyColumns[0]] = 1;
             var permission = yield dataLayer.permission.find({
               where: where2
             });
@@ -1773,7 +1773,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
           it('should not allow other hooks to be called if the abort callback is executed', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1791,7 +1791,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
           it('should abort action if hook executes the abort callback', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1805,7 +1805,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
           it('should allow hook to pass back a custom value if action is aborted', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1822,7 +1822,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
           it('single', function*() {
             var test = false;
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 3;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1841,7 +1841,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
         describe('beforeAttach', function() {
           it('single with primary keys', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1853,14 +1853,14 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
                   where: {}
                 }
               };
-              expectedOptions.criteria.where[Object.keys(dataLayer.permission._model._primaryKeys)[0]] = {
+              expectedOptions.criteria.where[dataLayer.permission._model._primaryKeyColumns[0]] = {
                 comparison: 'in',
                 value: [
                   2
                 ]
               };
               expect(options).to.deep.equal(expectedOptions);
-              options.criteria.where[Object.keys(dataLayer.permission._model._primaryKeys)[0]].value = [
+              options.criteria.where[dataLayer.permission._model._primaryKeyColumns[0]].value = [
                 3,
                 4
               ];
@@ -1877,13 +1877,13 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
           it('single with models', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
             var model = yield dataLayer.user.find({
               where: where
             });
 
             var where2 = {};
-            where2[Object.keys(dataLayer.permission._model._primaryKeys)[0]] = 2;
+            where2[dataLayer.permission._model._primaryKeyColumns[0]] = 2;
             var permission = yield dataLayer.permission.find({
               where: where2
             });
@@ -1895,14 +1895,14 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
                   where: {}
                 }
               };
-              expectedOptions.criteria.where[Object.keys(dataLayer.permission._model._primaryKeys)[0]] = {
+              expectedOptions.criteria.where[dataLayer.permission._model._primaryKeyColumns[0]] = {
                 comparison: 'in',
                 value: [
                   2
                 ]
               };
               expect(options).to.deep.equal(expectedOptions);
-              options.criteria.where[Object.keys(dataLayer.permission._model._primaryKeys)[0]].value = [
+              options.criteria.where[dataLayer.permission._model._primaryKeyColumns[0]].value = [
                 3,
                 4
               ];
@@ -1919,7 +1919,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
           it('should not allow other hooks to be called if the abort callback is executed', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1937,7 +1937,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
           it('should abort action if hook executes the abort callback', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1951,7 +1951,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
 
           it('should allow hook to pass back a custom value if action is aborted', function*() {
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1968,7 +1968,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
           it('single', function*() {
             var test = false;
             var where = {};
-            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            where[dataLayer.user._model._primaryKeyColumns[0]] = 1;
             var model = yield dataLayer.user.find({
               where: where
             });
@@ -1995,7 +1995,7 @@ module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
         expect(model.title).to.equal('before-user.admin');
 
         var where = {};
-        where[Object.keys(dataLayer.permissionHook._model._primaryKeys)[0]] = model.id;
+        where[dataLayer.permissionHook._model._primaryKeyColumns[0]] = model.id;
         var modelFromDatabase = yield dataLayer.permissionHook.find({
           where: where
         });
