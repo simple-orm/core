@@ -65,7 +65,7 @@ module.exports = function() {
       var defer = bluebird.defer();
       var abort = false;
       var abortValue = false;
-      var abortSaveCallback = function(returnValue) {
+      var abortCallback = function(returnValue) {
         abort = true;
 
         if(returnValue) {
@@ -77,7 +77,7 @@ module.exports = function() {
 
       try {
         if(this._status === 'new') {
-          this.runHooks('beforeSave', [this, 'insert', abortSaveCallback]);
+          this.runHooks('beforeSave', [this, 'insert', abortCallback]);
 
           if(abort === false) {
             this._dataAdapter.insert(this).then((function() {
@@ -88,7 +88,7 @@ module.exports = function() {
             });
           }
         } else if(this._status === 'dirty') {
-          this.runHooks('beforeSave', [this, 'update', abortSaveCallback]);
+          this.runHooks('beforeSave', [this, 'update', abortCallback]);
 
           if(abort === false) {
             this._dataAdapter.update(this).then((function() {
@@ -119,7 +119,7 @@ module.exports = function() {
       var defer = bluebird.defer();
       var abort = false;
       var abortValue = false;
-      var abortSaveCallback = function(returnValue) {
+      var abortCallback = function(returnValue) {
         abort = true;
 
         if(returnValue) {
@@ -130,7 +130,7 @@ module.exports = function() {
       };
 
       try {
-        this.runHooks('beforeRemove', [this, abortSaveCallback]);
+        this.runHooks('beforeRemove', [this, abortCallback]);
 
         if(abort === false) {
           this._dataAdapter.remove(this).then((function() {
@@ -326,7 +326,7 @@ module.exports = function() {
         var defer = bluebird.defer();
         var abort = false;
         var abortValue = false;
-        var abortSaveCallback = function(returnValue) {
+        var abortCallback = function(returnValue) {
           abort = true;
 
           if(returnValue) {
@@ -338,7 +338,7 @@ module.exports = function() {
         var valueField = options.relationProperty || decapitalize(repository._model._modelName) + 'Id';
 
         try {
-          this.runHooks('beforeGetRelationship', [this, 'belongsTo', repository._model._modelName, abortSaveCallback])
+          this.runHooks('beforeGetRelationship', [this, 'belongsTo', repository._model._modelName, abortCallback])
 
           if(abort === false) {
             //this adds support for relationships that are nullable
@@ -392,7 +392,7 @@ module.exports = function() {
         var defer = bluebird.defer();
         var abort = false;
         var abortValue = false;
-        var abortSaveCallback = function(returnValue) {
+        var abortCallback = function(returnValue) {
           abort = true;
 
           if(returnValue) {
@@ -404,7 +404,7 @@ module.exports = function() {
         var valueField = options.property || decapitalize(this._modelName) + 'Id';
 
         try {
-          this.runHooks('beforeGetRelationship', [this, 'hasOne', repository._model._modelName, abortSaveCallback]);
+          this.runHooks('beforeGetRelationship', [this, 'hasOne', repository._model._modelName, abortCallback]);
 
           if(abort === false) {
             var criteria = {
@@ -444,6 +444,9 @@ module.exports = function() {
 
       var functionName = 'get' + options.as;
       var throughRepository = (options.through) ? options.through : null;
+      var selfField = options.property || decapitalize(this._modelName) + 'Id';
+      var relationField = options.relationProperty || decapitalize(repository._model._modelName) + 'Id';
+
       this._relationships[options.as] = {
         functionCall: functionName,
         options: options
@@ -453,7 +456,7 @@ module.exports = function() {
         var defer = bluebird.defer();
         var abort = false;
         var abortValue = false;
-        var abortSaveCallback = function(returnValue) {
+        var abortCallback = function(returnValue) {
           abort = true;
 
           if(returnValue) {
@@ -464,14 +467,12 @@ module.exports = function() {
         };
 
         try {
-          this.runHooks('beforeGetRelationship', [this, 'hasMany', repository._model._modelName, abortSaveCallback]);
+          this.runHooks('beforeGetRelationship', [this, 'hasMany', repository._model._modelName, abortCallback]);
 
           if(abort === false) {
             var criteria = {};
-            var selfField = options.property || decapitalize(this._modelName) + 'Id';
 
             if(throughRepository) {
-              var relationField = options.relationProperty || decapitalize(repository._model._modelName) + 'Id';
               var on = {};
 
               on[throughRepository._model._table + '.' + selfField] = this.id;
@@ -509,6 +510,204 @@ module.exports = function() {
 
         return defer.promise;
       };
+
+      if(options.through) {
+        this['attach' + options.as] = function(data) {
+          //this will allow collections to be processed correctly
+          if(_.isFunction(data.toArray)) {
+            data = data.toArray();
+          }
+
+          //make sure the data is an array
+          if(!_.isArray(data)) {
+            data = [data];
+          }
+
+          var defer = bluebird.defer();
+          var abort = false;
+          var abortValue = false;
+          var abortCallback = function(returnValue) {
+            abort = true;
+
+            if(returnValue) {
+              abortValue = returnValue;
+            }
+
+            throw 'error to prevent other hooks from executing';
+          };
+          var selfId = this.id;
+          var buildMappingModels = function(relationModels) {
+            var returnModels = [];
+
+            relationModels.forEach(function(relationModel) {
+              var mapData = {};
+              mapData[selfField] = selfId;
+              //TODO: make simplier
+              mapData[relationField] = relationModel[repository._model._primaryKeys[Object.keys(repository._model._primaryKeys)[0]]];
+              returnModels.push(options.through.create(mapData));
+            });
+
+            return returnModels;
+          };
+          var buildCriteriaValue = function(models) {
+            var value = {
+              comparison: 'in',
+              value: []
+            };
+
+            models.forEach(function(model) {
+              //TODO: make simplier
+              value.value.push(model[repository._model._primaryKeys[Object.keys(repository._model._primaryKeys)[0]]]);
+            });
+
+            return value;
+          };
+
+          try {
+            if(data.length > 0) {
+              var criteria = {
+                where: {}
+              };
+
+              if(!_.isObject(data[0])) {
+                criteria.where[Object.keys(repository._model._primaryKeys)[0]] = {
+                  comparison: 'in',
+                  value: data
+                };
+              } else {
+                if(!_.isFunction(data[0].toJSONWithRelationships)) {
+                  defer.reject('Cannot attach a non-model object as a relationship object');
+                  return defer.promise;
+                }
+
+                criteria.where[Object.keys(repository._model._primaryKeys)[0]] = buildCriteriaValue(data);
+              }
+
+              var searchOptions = {
+                criteria: criteria
+              };
+
+              this.runHooks('beforeAttach', [this, searchOptions, abortCallback]);
+
+              repository.findAll(searchOptions.criteria).then((function(results) {
+                if(results.length === 0) {
+                  defer.reject('Cannot find relational model to attach with primary key "{0}"'.format(data));
+                  return;
+                }
+
+                this._dataAdapter.bulkInsert(buildMappingModels(results.toArray())).then((function(results) {
+                  this.runHooks('afterAttach', [this]);
+                  defer.resolve(true);
+                }).bind(this), function(error) {
+                  defer.reject(error);
+                });
+              }).bind(this), function(error) {
+                defer.reject(error);
+              });
+            } else {
+              defer.resolve(true);
+            }
+          } catch(exception) {
+            //any other execption needs to bubble up, this exception is expected
+            if(exception !== 'error to prevent other hooks from executing') {
+              throw exception;
+            }
+          }
+
+          if(abort === true) {
+            defer.resolve(abortValue);
+          }
+
+          return defer.promise;
+        };
+
+        this['detach' + options.as] = function(data) {
+          var defer = bluebird.defer();
+          var abort = false;
+          var abortValue = false;
+          var abortCallback = function(returnValue) {
+            abort = true;
+
+            if(returnValue) {
+              abortValue = returnValue;
+            }
+
+            throw 'error to prevent other hooks from executing';
+          };
+          var selfId = this.id;
+          var criteria = {
+            where: {}
+          };
+          criteria.where[selfField] = selfId
+
+          if(data) {
+            //this will allow collections to be processed correctly
+            if(_.isFunction(data.toArray)) {
+              data = data.toArray();
+            }
+
+            //make sure the data is an array
+            if(!_.isArray(data)) {
+              data = [data];
+            }
+
+            //need to convert to primary key is not already
+            if(_.isObject(data[0])) {
+              var temp = [];
+
+              data.forEach(function(model) {
+                //TODO: make simplier
+                var primaryKeyValue = model[repository._model._primaryKeys[Object.keys(repository._model._primaryKeys)[0]]];
+
+                //if we can't find a primaryKeyValue, use null so that nothing in removed for this object
+                temp.push(primaryKeyValue || null);
+              });
+
+              data = temp;
+            }
+
+            criteria.where[relationField] = {
+              comparison: 'in',
+              value: data
+            };
+          }
+          var searchOptions = {
+            criteria: criteria
+          };
+
+          try {
+            this.runHooks('beforeDetach', [this, searchOptions, abortCallback]);
+
+            if(abort === false) {
+              options.through.findAll(searchOptions.criteria).then((function(results) {
+                if(results.length > 0) {
+                  this._dataAdapter.bulkRemove(results).then((function(results) {
+                    this.runHooks('afterDetach', [this]);
+                    defer.resolve(true);
+                  }).bind(this), function(error) {
+                    defer.reject(error);
+                  });
+                } else {
+                  defer.resolve(true);
+                }
+              }).bind(this), function(error) {
+                defer.reject(error);
+              });
+            }
+          } catch(exception) {
+            //any other execption needs to bubble up, this exception is expected
+            if(exception !== 'error to prevent other hooks from executing') {
+              throw exception;
+            }
+          }
+
+          if(abort === true) {
+            defer.resolve(abortValue);
+          }
+
+          return defer.promise;
+        };
+      }
     },
 
     plugin: function(pluginFunction, options) {

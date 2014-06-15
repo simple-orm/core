@@ -435,10 +435,64 @@ model.hasMany(repositories.userGroup);
 To define a many-to-many, you must use the `through` option.
 
 ```javascript
-//now all instances of this model will have a getPermissions() method
+//now all instances of this model will have a getPermissions(), attachPermissions(), and detachPermissions() methods
 model.hasMany(repositories.permissions, {
   through: repositories.userPermissionMap
 });
+```
+
+#### Managing Relationship Data
+
+##### get*() `belongsTo()` `hasOne()` `hasMany()`
+
+Returns a collection of models that are linked to the calling model.
+
+```javascript
+user.getPermissions();
+```
+
+##### attach*(data) `hasMany() with through configured`
+
+Adds data in the data store using the `through` repository in order to add a link between the models.
+
+```javascript
+//by primary key
+user.attachPermissions(1);
+
+//by array of primary keys
+user.attachPermissions([1, 2]);
+
+//by model
+user.attachPermissions(permission);
+
+//by array of models
+user.attachPermissions([permission1, permission2]);
+
+//by collection of models
+var collection = simpleOrm.collection([permission1, permission2]);
+user.attachPermissions(collection);
+```
+
+##### detach*(data) `hasMany() with through configured`
+
+Removes data in the data store using the `through` repository in order to remove the link between the models.
+
+```javascript
+//by primary key
+user.detachPermissions(1);
+
+//by array of primary keys
+user.detachPermissions([1, 2]);
+
+//by model
+user.detachPermissions(permission);
+
+//by array of models
+user.detachPermissions([permission1, permission2]);
+
+//by collection of models
+var collection = simpleOrm.collection([permission1, permission2]);
+user.detachPermissions(collection);
 ```
 
 ### Criteria Object
@@ -759,6 +813,18 @@ The following hooks are supported:
  - `relationshipType`: The name of the relationship type (`belongsTo`, `hasOne`, `hasMany`)
  - `relationshipName`: The name of the relationship
  - `abort`: Abort callback
+- `beforeAttach(model, options, abort)`
+ - `model`: The model
+ - `options`: Object that holds a `criteria` property that can be modified and will be used in searching for models to attach
+ - `abort`: Abort callback
+- `afterAttach(model)`
+ - `model`: The model
+- `beforeDetach(model, options, abort)`
+ - `model`: The model
+ - `options`: Object that holds a `criteria` property that can be modified and will be used in searching for models to detach
+ - `abort`: Abort callback
+- `afterDetach(model)`
+ - `model`: The model
 
 ### Repository
 

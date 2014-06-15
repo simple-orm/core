@@ -1,4 +1,5 @@
 # master
+- added `attach*()`/`detach*()` methods to the model when adding a `hasMany` relationship with a through repository (#16)
 - updated data adapter interface requirements
 - added `toArray()` method for collections
 

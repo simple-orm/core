@@ -2,8 +2,10 @@ var simpleOrm = require('../../orm/index');
 var expect = require('chai').expect;
 var testUserValues = require('../test-user-values');
 var moment = require('moment');
+var _ = require('lodash');
+var co = require('co');
 
-module.exports = function(dataLayer, dataAdapter) {
+module.exports = function(dataLayer, dataAdapter, dataLayerValues) {
   describe('model', function() {
     beforeEach(function*(){
       //dataAdapter.enableDebug();
@@ -385,7 +387,7 @@ module.exports = function(dataLayer, dataAdapter) {
         expect(relationalModels.getByIndex(1).email).to.equal('five@example.com');
       });
 
-      it('should be able to define hasMany relationship with through model', function*() {
+      it('should be able to define hasMany relationship with through', function*() {
         var where = {};
         where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
         var model = yield dataLayer.user.find({
@@ -405,6 +407,189 @@ module.exports = function(dataLayer, dataAdapter) {
 
         expect(relationalModels.getByIndex(3).id).to.equal(4);
         expect(relationalModels.getByIndex(3).title).to.equal('user.delete');
+      });
+
+      describe('attach method', function() {
+        var model;
+        var permission1;
+        var permission2;
+
+        beforeEach(function*() {
+          var where = {};
+          where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+          model = yield dataLayer.user.find({
+            where: where
+          });
+
+          var where2 = {};
+          where2[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 2;
+          permission1 = yield dataLayer.permission.find({
+            where: where2
+          });
+
+          var where3 = {};
+          where3[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+          permission2 = yield dataLayer.permission.find({
+            where: where3
+          });
+        });
+
+        it('should be added to model when defining a hasMany relationship with through', function*() {
+          expect(_.isFunction(model.attachPermissions)).to.be.true;
+        });
+
+        it('should be able to accept a single primary key', function*() {
+          yield model.attachPermissions(2);
+
+          var permission = yield model.getPermissions();
+
+          expect(permission.length).to.equal(2);
+        });
+
+        it('should be able to accept an array of primary keys', function*() {
+          yield model.attachPermissions([2, 3]);
+
+          var permission = yield model.getPermissions();
+
+          expect(permission.length).to.equal(3);
+        });
+
+        it('should be able to accept a single model', function*() {
+          yield model.attachPermissions(permission1);
+
+          var permission = yield model.getPermissions();
+
+          expect(permission.length).to.equal(2);
+        });
+
+        it('should be able to accept an array of models', function*() {
+          yield model.attachPermissions([permission1, permission2]);
+
+          var permission = yield model.getPermissions();
+
+          expect(permission.length).to.equal(3);
+        });
+
+        it('should be able to accept a collection of models', function*() {
+          var collection = simpleOrm.collection([permission1, permission2]);
+          yield model.attachPermissions(collection);
+
+          var permission = yield model.getPermissions();
+
+          expect(permission.length).to.equal(3);
+        });
+
+        it('should throw error if bad primary key is passed', function*() {
+          var errorThrow = '';
+
+          try {
+            yield model.attachPermissions(1000000000);
+          } catch(exception) {
+            errorThrow = exception;
+          }
+
+          expect(errorThrow).to.equal('Cannot find relational model to attach with primary key "1000000000"');
+        });
+
+        it('should throw error if non-model object is passed', function*() {
+          var err = "Cannot attach a non-model object as a relationship object";
+            var errorThrow = '';
+
+            try {
+              yield model.attachPermissions({});
+            } catch(exception) {
+              errorThrow = exception;
+            }
+
+            expect(errorThrow).to.equal('Cannot attach a non-model object as a relationship object');
+        });
+      });
+
+      describe('detach method', function() {
+        var model;
+        var permission1;
+        var permission2;
+
+        beforeEach(function*() {
+          var where = {};
+          where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+          model = yield dataLayer.user.find({
+            where: where
+          });
+
+          var where2 = {};
+          where2[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 2;
+          permission1 = yield dataLayer.permission.find({
+            where: where2
+          });
+
+          var where3 = {};
+          where3[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+          permission2 = yield dataLayer.permission.find({
+            where: where3
+          });
+        });
+
+        it('should be added to model when defining a hasMany relationship with through', function*() {
+          expect(_.isFunction(model.detachPermissions)).to.be.true;
+        });
+
+        it('should be able to accept a single primary key', function*() {
+          yield model.detachPermissions(2);
+
+          var permission = yield model.getPermissions();
+
+          expect(permission.length).to.equal(3);
+        });
+
+        it('should be able to accept an array of primary keys', function*() {
+          yield model.detachPermissions([2, 3]);
+
+          var permission = yield model.getPermissions();
+
+          expect(permission.length).to.equal(2);
+        });
+
+        it('should be able to accept a single model', function*() {
+          yield model.detachPermissions(permission1);
+
+          var permission = yield model.getPermissions();
+
+          expect(permission.length).to.equal(3);
+        });
+
+        it('should be able to accept an array of models', function*() {
+          yield model.detachPermissions([permission1, permission2]);
+
+          var permission = yield model.getPermissions();
+
+          expect(permission.length).to.equal(2);
+        });
+
+        it('should be able to accept a collection of models', function*() {
+          var collection = simpleOrm.collection([permission1, permission2]);
+          yield model.detachPermissions(collection);
+
+          var permission = yield model.getPermissions();
+
+          expect(permission.length).to.equal(2);
+        });
+
+        it('should not remove an models if invilad primary key is passed', function*() {
+          yield model.detachPermissions(1000000000);
+
+          var permission = yield model.getPermissions();
+
+          expect(permission.length).to.equal(4);
+        });
+
+        it('should not remove an models if invalid object is passed', function*() {
+          yield model.detachPermissions({});
+
+          var permission = yield model.getPermissions();
+
+          expect(permission.length).to.equal(4);
+        });
       });
 
       it('should be able to define hasMany relationship with through model defining fields', function*() {
@@ -437,7 +622,7 @@ module.exports = function(dataLayer, dataAdapter) {
         expect(relationalModels.getByIndex(3).title).to.equal('user.delete');
       });
 
-      it('should return null is a belongsTo does not link anyone (basically a "can belong to" type relationship)', function*() {
+      it('should return null if a belongsTo does not link anyone (basically a "can belong to" type relationship)', function*() {
         var where = {};
         where[Object.keys(dataLayer.userDetail._model._primaryKeys)[0]] = 5;
         var model = yield dataLayer.userDetail.find({
@@ -1504,6 +1689,298 @@ module.exports = function(dataLayer, dataAdapter) {
             var relationalModels = yield model.getTestUserEmails();
 
             expect(relationalModels.getByIndex(0).email).to.equal('hook');
+          });
+        });
+
+        describe('beforeDetach', function() {
+          it('single with primary key', function*() {
+            var where = {};
+            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            var model = yield dataLayer.user.find({
+              where: where
+            });
+
+            model.hook('beforeDetach[test]', function(model, options, abort) {
+              expect(model.id).to.equal(3);
+              expectedOptions = {
+                criteria: {
+                  where: {}
+                }
+              };
+              expectedOptions.criteria.where[dataLayerValues.userPermissionMapUserField] = 3;
+              expectedOptions.criteria.where[dataLayerValues.userPermissionMapPermissionField] = {
+                comparison: 'in',
+                value: [
+                  1
+                ]
+              };
+              expect(options).to.deep.equal(expectedOptions);
+              options.criteria.where[dataLayerValues.userPermissionMapPermissionField].value = [
+                3,
+                4
+              ];
+            });
+
+            yield model.detachPermissions(1);
+            var permissions = yield model.getPermissions();
+
+            expect(permissions.length).to.equal(2);
+            expect(permissions.getByIndex(0).id).to.equal(1);
+            expect(permissions.getByIndex(1).id).to.equal(2);
+          });
+
+          it('single with primary key', function*() {
+            var where = {};
+            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            var model = yield dataLayer.user.find({
+              where: where
+            });
+
+            var where2 = {};
+            where2[Object.keys(dataLayer.permission._model._primaryKeys)[0]] = 1;
+            var permission = yield dataLayer.permission.find({
+              where: where2
+            });
+
+            model.hook('beforeDetach[test]', function(model, options, abort) {
+              expect(model.id).to.equal(3);
+              expectedOptions = {
+                criteria: {
+                  where: {}
+                }
+              };
+              expectedOptions.criteria.where[dataLayerValues.userPermissionMapUserField] = 3;
+              expectedOptions.criteria.where[dataLayerValues.userPermissionMapPermissionField] = {
+                comparison: 'in',
+                value: [
+                  1
+                ]
+              };
+              expect(options).to.deep.equal(expectedOptions);
+              options.criteria.where[dataLayerValues.userPermissionMapPermissionField].value = [
+                3,
+                4
+              ];
+            });
+
+            yield model.detachPermissions(permission);
+            var permissions = yield model.getPermissions();
+
+            expect(permissions.length).to.equal(2);
+            expect(permissions.getByIndex(0).id).to.equal(1);
+            expect(permissions.getByIndex(1).id).to.equal(2);
+          });
+
+          it('should not allow other hooks to be called if the abort callback is executed', function*() {
+            var where = {};
+            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            var model = yield dataLayer.user.find({
+              where: where
+            });
+
+            model.hook('beforeDetach[test]', function(model, options, abort) {
+              abort();
+            });
+
+            model.hook('beforeDetach[test2]', function(model, options, abort) {
+              expect(false).to.be.true;
+            });
+
+            expect(yield model.detachPermissions(1)).to.be.false;
+          });
+
+          it('should abort action if hook executes the abort callback', function*() {
+            var where = {};
+            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            var model = yield dataLayer.user.find({
+              where: where
+            });
+
+            model.hook('beforeDetach[test]', function(model, options, abort) {
+              abort()
+            });
+
+            expect(yield model.detachPermissions(1)).to.be.false;
+          });
+
+          it('should allow hook to pass back a custom value if action is aborted', function*() {
+            var where = {};
+            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            var model = yield dataLayer.user.find({
+              where: where
+            });
+
+            model.hook('beforeDetach[test]', function(model, options, abort) {
+              abort('before detach abort')
+            });
+
+            expect(yield model.detachPermissions(1)).to.equal('before detach abort');
+          });
+        });
+
+        describe('afterDetach', function() {
+          it('single', function*() {
+            var test = false;
+            var where = {};
+            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 3;
+            var model = yield dataLayer.user.find({
+              where: where
+            });
+
+            model.hook('afterDetach[test]', function(model) {
+              expect(model.id).to.equal(3);
+              test = true;
+            });
+
+            yield model.detachPermissions(1);
+
+            expect(test).to.be.true;
+          });
+        });
+
+        describe('beforeAttach', function() {
+          it('single with primary keys', function*() {
+            var where = {};
+            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            var model = yield dataLayer.user.find({
+              where: where
+            });
+
+            model.hook('beforeAttach[test]', function(model, options, abort) {
+              expect(model.id).to.equal(1);
+              expectedOptions = {
+                criteria: {
+                  where: {}
+                }
+              };
+              expectedOptions.criteria.where[Object.keys(dataLayer.permission._model._primaryKeys)[0]] = {
+                comparison: 'in',
+                value: [
+                  2
+                ]
+              };
+              expect(options).to.deep.equal(expectedOptions);
+              options.criteria.where[Object.keys(dataLayer.permission._model._primaryKeys)[0]].value = [
+                3,
+                4
+              ];
+            });
+
+            yield model.attachPermissions(2);
+            var permissions = yield model.getPermissions();
+
+            expect(permissions.length).to.equal(3);
+            expect(permissions.getByIndex(0).id).to.equal(1);
+            expect(permissions.getByIndex(1).id).to.equal(3);
+            expect(permissions.getByIndex(2).id).to.equal(4);
+          });
+
+          it('single with models', function*() {
+            var where = {};
+            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            var model = yield dataLayer.user.find({
+              where: where
+            });
+
+            var where2 = {};
+            where2[Object.keys(dataLayer.permission._model._primaryKeys)[0]] = 2;
+            var permission = yield dataLayer.permission.find({
+              where: where2
+            });
+
+            model.hook('beforeAttach[test]', function(model, options, abort) {
+              expect(model.id).to.equal(1);
+              expectedOptions = {
+                criteria: {
+                  where: {}
+                }
+              };
+              expectedOptions.criteria.where[Object.keys(dataLayer.permission._model._primaryKeys)[0]] = {
+                comparison: 'in',
+                value: [
+                  2
+                ]
+              };
+              expect(options).to.deep.equal(expectedOptions);
+              options.criteria.where[Object.keys(dataLayer.permission._model._primaryKeys)[0]].value = [
+                3,
+                4
+              ];
+            });
+
+            yield model.attachPermissions(permission);
+            var permissions = yield model.getPermissions();
+
+            expect(permissions.length).to.equal(3);
+            expect(permissions.getByIndex(0).id).to.equal(1);
+            expect(permissions.getByIndex(1).id).to.equal(3);
+            expect(permissions.getByIndex(2).id).to.equal(4);
+          });
+
+          it('should not allow other hooks to be called if the abort callback is executed', function*() {
+            var where = {};
+            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            var model = yield dataLayer.user.find({
+              where: where
+            });
+
+            model.hook('beforeAttach[test]', function(model, options, abort) {
+              abort();
+            });
+
+            model.hook('beforeAttach[test]', function(model, options, abort) {
+              expect(false).to.be.true;
+            });
+
+            expect(yield model.attachPermissions(1)).to.be.false;
+          });
+
+          it('should abort action if hook executes the abort callback', function*() {
+            var where = {};
+            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            var model = yield dataLayer.user.find({
+              where: where
+            });
+
+            model.hook('beforeAttach[test]', function(model, options, abort) {
+              abort();
+            });
+
+            expect(yield model.attachPermissions(1)).to.be.false;
+          });
+
+          it('should allow hook to pass back a custom value if action is aborted', function*() {
+            var where = {};
+            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            var model = yield dataLayer.user.find({
+              where: where
+            });
+
+            model.hook('beforeAttach[test]', function(model, options, abort) {
+              abort('before attach abort');
+            });
+
+            expect(yield model.attachPermissions(1)).to.equal('before attach abort');
+          });
+        });
+
+        describe('afterAttach', function() {
+          it('single', function*() {
+            var test = false;
+            var where = {};
+            where[Object.keys(dataLayer.user._model._primaryKeys)[0]] = 1;
+            var model = yield dataLayer.user.find({
+              where: where
+            });
+
+            model.hook('afterAttach[test]', function(model) {
+              expect(model.id).to.equal(1);
+              test = true;
+            });
+
+            yield model.attachPermissions(2);
+
+            expect(test).to.be.true;
           });
         });
       });
