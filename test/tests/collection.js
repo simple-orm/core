@@ -265,5 +265,17 @@ module.exports = function(dataLayer) {
         expect(collection.length).to.equal(2);
       });
     });
+
+    it('should be able to convert collection to array', function*() {
+      collection.add([
+        model1,
+        model2
+      ]);
+      var collectionArray = collection.toArray();
+
+      expect(collectionArray.length).to.equal(2);
+      expect(collectionArray[0].id).to.equal(1);
+      expect(collectionArray[1].id).to.equal(2);
+    });
   });
 }

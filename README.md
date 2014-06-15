@@ -663,6 +663,14 @@ The same thing as the model's `toJSONWithRelationships()` method except does it 
 collection.toJSONWithRelationship('Permissions');
 ```
 
+#### toArray()
+
+Returns the collection as a standard JavaScript array.
+
+```javascript
+collection.toArray();
+```
+
 #### length
 
 The collection object exposes a readonly `length` property that returns the number of models in the collection.

@@ -1,3 +1,6 @@
+# master
+- added `toArray()` method for collections
+
 # 0.5.1
 - updated base model to work properly with the new collection object
 - the collection's `toJSON()` and `toJSONWithRelationships()` methods now return null if the collection is empty

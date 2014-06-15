@@ -117,6 +117,10 @@ collection.toJSONWithRelationships = function() {
   return defer.promise;
 };
 
+collection.toArray = function() {
+  return this._data;
+};
+
 Object.defineProperties(collection, {
   length: {
     get: function() {
