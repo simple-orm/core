@@ -6,7 +6,7 @@ Change log can be found [here](https://github.com/simple-orm/core/blob/master/CH
 
 FAQ can be found [here](https://github.com/simple-orm/core/wiki).
 
-A "simple" ORM for NodeJS.
+A ORM for NodeJS.
 
 This ORM is designed to be light weight in the core framework but easily extendable to allow for more advance/specific features to be included in an opt-in way.  It has 2 main core components are `repositories` and `models`.  The base components will provide the basic functionality for creating, retrieving, and saving data.  The core framework will also provide the following:
 
