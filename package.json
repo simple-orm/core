@@ -37,7 +37,8 @@
     "simple-orm-mysql-adapter": "git://github.com/simple-orm/mysql-adapter.git#master",
     "simple-orm-relationship-memory-cache": "git://github.com/simple-orm/relationship-memory-cache.git#master",
     "simple-orm-find-by-primary-key": "git://github.com/simple-orm/find-by-primary-key.git#master",
-    "simple-orm-validate": "git://github.com/simple-orm/validate.git#master"
+    "simple-orm-validate": "git://github.com/simple-orm/validate.git#master",
+    "mysql-pool-connection-manager": "git://github.com/simple-orm/mysql-pool-connection-manager.git#master"
   },
   "engines": {
     "node": ">=0.11.10"
