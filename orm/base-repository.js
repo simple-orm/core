@@ -12,8 +12,8 @@ interfaceChecker.define('SimpleOrmDataAdapter', [
   'update:1',
   'remove:1',
   'bulkRemove:1',
-  'find:3',
-  'findAll:3',
+  'find:2',
+  'findAll:2',
   'startTransaction',
   'commitTransaction',
   'rollbackTransaction'//,
@@ -25,39 +25,40 @@ interfaceChecker.define('SimpleOrmDataAdapter', [
    'runQuery'*/
 ]);
 
-module.exports = function(model, dataAdapter) {
-  var interfaceCheck = interfaceChecker.has(dataAdapter, 'SimpleOrmDataAdapter');
+module.exports = function(model) {
+  var validateDataAdapterInterface = function(dataAdapter) {
+    var interfaceCheck = interfaceChecker.has(dataAdapter, 'SimpleOrmDataAdapter');
 
-  if(interfaceCheck !== true) {
-    var errorMessage = "The passed in data adapter has the following issue:";
+    if(interfaceCheck !== true) {
+      var errorMessage = "The passed in data adapter has the following issue:";
 
-    if(interfaceCheck.missingMethods) {
-      interfaceCheck.missingMethods.forEach(function(value) {
-        errorMessage += "\nMissing {0} method".format(value);
-      });
+      if(interfaceCheck.missingMethods) {
+        interfaceCheck.missingMethods.forEach(function(value) {
+          errorMessage += "\nMissing {0} method".format(value);
+        });
+      }
+
+      if(interfaceCheck.missingProperties) {
+        interfaceCheck.missingProperties.forEach(function(value) {
+          errorMessage += "\nMissing {0} property".format(value);
+        });
+      }
+
+      if(interfaceCheck.parameterMismatch) {
+        interfaceCheck.parameterMismatch.forEach(function(value) {
+          errorMessage += "\n" + value;
+        });
+      }
+
+      if(interfaceCheck.invalidType) {
+        _.forEach(interfaceCheck.invalidType, function(expectedPropertyType, propertyName) {
+          errorMessage += "\nExpected {0} to be a {1}".format(propertyName, expectedPropertyType);
+        });
+      }
+
+      throw new Error(errorMessage);
     }
-
-    if(interfaceCheck.missingProperties) {
-      interfaceCheck.missingProperties.forEach(function(value) {
-        errorMessage += "\nMissing {0} property".format(value);
-      });
-    }
-
-    if(interfaceCheck.parameterMismatch) {
-      interfaceCheck.parameterMismatch.forEach(function(value) {
-        errorMessage += "\n" + value;
-      });
-    }
-
-    if(interfaceCheck.invalidType) {
-      _.forEach(interfaceCheck.invalidType, function(expectedPropertyType, propertyName) {
-        errorMessage += "\nExpected {0} to be a {1}".format(propertyName, expectedPropertyType);
-      });
-    }
-
-    throw new Error(errorMessage);
-    return;
-  }
+  };
 
   var baseRepository = Object.create(hookable);
 
@@ -65,13 +66,19 @@ module.exports = function(model, dataAdapter) {
     _emitter: new EventEmitter(),
     _hooks: {},
     _model: model,
-    _dataAdapter: dataAdapter,
+    _dataAdapter: null,
+
+    setDataAdapter: function(dataAdapter) {
+      validateDataAdapterInterface(dataAdapter);
+      this._dataAdapter = dataAdapter;
+    },
+
     create: function(data, status) {
       status = status || 'new';
       data = data || {};
       var returnObject = Object.create(model);
       returnObject._status = status;
-      returnObject.init(data, dataAdapter);
+      returnObject.init(data, this._dataAdapter);
       return returnObject;
     },
 
@@ -96,9 +103,17 @@ module.exports = function(model, dataAdapter) {
         }]);
 
         if(abort === false) {
-          this._dataAdapter.find(model, options.criteria, this.create).then((function(results) {
-            this.runHooks('afterFind', [this, results]);
-            defer.resolve(results);
+          this._dataAdapter.find(model, options.criteria).then((function(results) {
+            var returnObject;
+
+            if(!results) {
+              returnObject = null
+            } else {
+              returnObject = this.create(results, 'loaded');
+            }
+
+            this.runHooks('afterFind', [this, returnObject]);
+            defer.resolve(returnObject);
           }).bind(this), function(error) {
             defer.reject(error);
           });
@@ -139,7 +154,14 @@ module.exports = function(model, dataAdapter) {
 
         if(abort === false) {
           this._dataAdapter.findAll(model, options.criteria, this.create).then((function(results) {
-            var collection = collectionFactory(results);
+            var collection = collectionFactory();
+
+            if(results.length > 0) {
+              _.forEach(results, function(row) {
+                collection.add(this.create(row, 'loaded'));
+              }, this);
+            }
+
             this.runHooks('afterFindAll', [this, collection]);
             defer.resolve(collection);
           }).bind(this), function(error) {

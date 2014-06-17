@@ -1,5 +1,15 @@
 module.exports = {
-  baseModel: require('./base-model'),
-  baseRepository: require('./base-repository'),
-  collection: require('./collection')
+  baseModel: {
+    create: require('./base-model')
+  },
+  baseRepository:{
+    create:  require('./base-repository')
+  },
+  collection:{
+    create:  require('./collection')
+  },
+  dataAdapterManager: require('./data-adapter-manager'),
+  dataLayer:{
+    create:  require('./data-layer')
+  }
 };
