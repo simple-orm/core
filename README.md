@@ -505,6 +505,22 @@ var user = yield dataLayer.user.find({
 yield user.remove();
 ```
 
+#### reset()
+
+Reset the models data to it's initial values.
+
+```javascript
+var user = yield dataLayer.user.find({
+  where: {
+    id: 123
+  }
+});
+user.firstName = 'test';
+
+//user.firstName will be reset back to whatever is was when it was loaded from the data store
+user.reset();
+```
+
 #### toJSON()
 
 This will convert the model to JSON.
