@@ -5,6 +5,8 @@ If a change is prefixed with one or more of these, it has special mean:
 
 # master
 
+- refactored mocha tests [#23]
+- added `removeAllHooks()` method to hookable object
 - added ability to attach plugins to core model and repository base objects [#30]
 - refactored collection
 - collection's `add()` method can now take a collection [#31]

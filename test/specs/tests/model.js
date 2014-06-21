@@ -3,6 +3,68 @@ var _ = require('lodash');
 var moment = require('moment');
 
 module.exports = function(dataLayerValues) {
+  before(function*() {
+    var where = {};
+    where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
+    this.user1 = yield this.dataLayer.user.find({
+      where: where
+    });
+
+    var where = {};
+    where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
+    this.user3 = yield this.dataLayer.user.find({
+      where: where
+    });
+
+    var where2 = {};
+    where2[this.dataLayer.permission._model._primaryKeyColumns[0]] = 1;
+    this.permission1 = yield this.dataLayer.permission.find({
+      where: where2
+    });
+
+    var where3 = {};
+    where3[this.dataLayer.permission._model._primaryKeyColumns[0]] = 2;
+    this.permission2 = yield this.dataLayer.permission.find({
+      where: where3
+    });
+
+    var where3 = {};
+    where3[this.dataLayer.permission._model._primaryKeyColumns[0]] = 3;
+    this.permission3 = yield this.dataLayer.permission.find({
+      where: where3
+    });
+
+    var where = {};
+    where[this.dataLayer.userDetail._model._primaryKeyColumns[0]] = 1;
+    this.userDetail1 = yield this.dataLayer.userDetail.find({
+      where: where
+    });
+
+    var where = {};
+    where[this.dataLayer.userDetail._model._primaryKeyColumns[0]] = 5;
+    this.userDetail5 = yield this.dataLayer.userDetail.find({
+      where: where
+    });
+  });
+
+  afterEach(function*() {
+    this.user1.reset();
+    this.user3.reset();
+    this.permission1.reset();
+    this.permission2.reset();
+    this.permission3.reset();
+    this.userDetail1.reset();
+    this.userDetail5.reset();
+
+    this.user1.removeAllHooks();
+    this.user3.removeAllHooks();
+    this.permission1.removeAllHooks();
+    this.permission2.removeAllHooks();
+    this.permission3.removeAllHooks();
+    this.userDetail1.removeAllHooks();
+    this.userDetail5.removeAllHooks();
+  });
+
   describe('status', function() {
     it('should be `new` with new instance', function*() {
       var model = this.dataLayer.user.create();
@@ -19,29 +81,16 @@ module.exports = function(dataLayerValues) {
     });
 
     it('should be `loaded` with new instance', function*() {
-      var where = {};
-      where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-      var model = yield this.dataLayer.user.find({
-        where: where
-      });
-
-      expect(model._status).to.equal('loaded');
+      expect(this.user3._status).to.equal('loaded');
     });
 
     it('should be `dirty` with instance that has unchanged data', function*() {
-      var where = {};
-      where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-      var model = yield this.dataLayer.user.find({
-        where: where
-      });
+      this.user3.firstName = 'test';
 
-      model.firstName = 'test';
-
-      expect(model._status).to.equal('dirty');
+      expect(this.user3._status).to.equal('dirty');
     });
 
     it('should be `loaded` with new instance after is save', function*() {
-
       var model = this.dataLayer.user.create({
         firstName: 'test',
         lastName: 'user',
@@ -56,16 +105,10 @@ module.exports = function(dataLayerValues) {
     });
 
     it('should be `loaded` with exist instance after is save', function*() {
-      var model = yield this.dataLayer.user.find({
-        where: {
-          id: 3
-        }
-      });
+      this.user3.firstName = 'test';
+      yield this.user3.save();
 
-      model.firstName = 'test';
-      yield model.save();
-
-      expect(model._status).to.equal('loaded');
+      expect(this.user3._status).to.equal('loaded');
     });
   });
 
@@ -118,16 +161,10 @@ module.exports = function(dataLayerValues) {
     it('should be able to update an instance', function*() {
       var start = moment().format('X');
 
-      var where = {};
-      where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-      var model = yield this.dataLayer.user.find({
-        where: where
-      });
+      this.user3.requirePasswordChangeFlag = true;
+      yield this.user3.save();
 
-      model.requirePasswordChangeFlag = true;
-      yield model.save();
-
-      this.testUserValues(model, {
+      this.testUserValues(this.user3, {
         id: 3,
         firstName: 'John',
         lastName: 'Doe2',
@@ -142,7 +179,7 @@ module.exports = function(dataLayerValues) {
       });
 
       var where = {};
-      where[this.dataLayer.user._model._primaryKeyColumns[0]] = model.id;
+      where[this.dataLayer.user._model._primaryKeyColumns[0]] = this.user3.id;
       var modelFromDatabase = yield this.dataLayer.user.find({
         where: where
       });
@@ -164,13 +201,7 @@ module.exports = function(dataLayerValues) {
     });
 
     it('should be able to delete an instance', function*() {
-      var where = {};
-      where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-      var model = yield this.dataLayer.user.find({
-        where: where
-      });
-
-      expect(yield model.remove()).to.be.true;
+      expect(yield this.user3.remove()).to.be.true;
 
       var where = {};
       where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
@@ -287,19 +318,13 @@ module.exports = function(dataLayerValues) {
     });
 
     it('should be able to reset when created from data store', function*() {
-      var model = yield this.dataLayer.user.find({
-        where: {
-          firstName: 'John'
-        }
-      });
+      this.user1.firstName = 'test';
+      this.user1.lastName = 'user';
+      this.user1.requirePasswordChangeFlag = true;
 
-      model.firstName = 'test';
-      model.lastName = 'user';
-      model.requirePasswordChangeFlag = true;
+      this.user1.reset();
 
-      model.reset();
-
-      this.testUserValues(model, {
+      this.testUserValues(this.user1, {
         id: 1,
         firstName: 'John',
         lastName: 'Doe',
@@ -312,19 +337,13 @@ module.exports = function(dataLayerValues) {
         requirePasswordChangeFlag: true,
         status: 'registered'
       });
-      expect(model._status).to.equal('loaded');
+      expect(this.user1._status).to.equal('loaded');
     });
   });
 
   describe('relationships', function() {
     it('should be able to define a hasOne relationship', function*() {
-      var where = {};
-      where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-      var model = yield this.dataLayer.user.find({
-        where: where
-      });
-
-      var relationalModel = yield model.getUserDetail();
+      var relationalModel = yield this.user1.getUserDetail();
 
       expect(relationalModel.id).to.equal(1);
       expect(relationalModel.userId).to.equal(1);
@@ -332,13 +351,7 @@ module.exports = function(dataLayerValues) {
     });
 
     it('should be able to define belongsTo relationship', function*() {
-      var where = {};
-      where[this.dataLayer.userDetail._model._primaryKeyColumns[0]] = 1;
-      var model = yield this.dataLayer.userDetail.find({
-        where: where
-      });
-
-      var relationalModel = yield model.getUser();
+      var relationalModel = yield this.userDetail1.getUser();
 
       this.testUserValues(relationalModel, {
         id: 1,
@@ -356,13 +369,7 @@ module.exports = function(dataLayerValues) {
     });
 
     it('should be able to define hasMany relationship', function*() {
-      var where = {};
-      where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-      var model = yield this.dataLayer.user.find({
-        where: where
-      });
-
-      var relationalModels = yield model.getTestUserEmails();
+      var relationalModels = yield this.user1.getTestUserEmails();
 
       expect(relationalModels.getByIndex(0).id).to.equal(1);
       expect(relationalModels.getByIndex(0).userId).to.equal(1);
@@ -374,13 +381,7 @@ module.exports = function(dataLayerValues) {
     });
 
     it('should be able to define hasMany relationship with through', function*() {
-      var where = {};
-      where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-      var model = yield this.dataLayer.user.find({
-        where: where
-      });
-
-      var relationalModels = yield model.getPermissions();
+      var relationalModels = yield this.user3.getPermissions();
 
       expect(relationalModels.getByIndex(0).id).to.equal(1);
       expect(relationalModels.getByIndex(0).title).to.equal('user.create');
@@ -396,71 +397,47 @@ module.exports = function(dataLayerValues) {
     });
 
     describe('attach method', function() {
-      var model;
-      var permission1;
-      var permission2;
-
-      beforeEach(function*() {
-        var where = {};
-        where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-        model = yield this.dataLayer.user.find({
-          where: where
-        });
-
-        var where2 = {};
-        where2[this.dataLayer.user._model._primaryKeyColumns[0]] = 2;
-        permission1 = yield this.dataLayer.permission.find({
-          where: where2
-        });
-
-        var where3 = {};
-        where3[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-        permission2 = yield this.dataLayer.permission.find({
-          where: where3
-        });
-      });
-
       it('should be added to model when defining a hasMany relationship with through', function*() {
-        expect(_.isFunction(model.attachPermissions)).to.be.true;
+        expect(_.isFunction(this.user1.attachPermissions)).to.be.true;
       });
 
       it('should be able to accept a single primary key', function*() {
-        yield model.attachPermissions(2);
+        yield this.user1.attachPermissions(2);
 
-        var permission = yield model.getPermissions();
+        var permission = yield this.user1.getPermissions();
 
         expect(permission.length).to.equal(2);
       });
 
       it('should be able to accept an array of primary keys', function*() {
-        yield model.attachPermissions([2, 3]);
+        yield this.user1.attachPermissions([2, 3]);
 
-        var permission = yield model.getPermissions();
+        var permission = yield this.user1.getPermissions();
 
         expect(permission.length).to.equal(3);
       });
 
       it('should be able to accept a single model', function*() {
-        yield model.attachPermissions(permission1);
+        yield this.user1.attachPermissions(this.permission3);
 
-        var permission = yield model.getPermissions();
+        var permission = yield this.user1.getPermissions();
 
         expect(permission.length).to.equal(2);
       });
 
       it('should be able to accept an array of models', function*() {
-        yield model.attachPermissions([permission1, permission2]);
+        yield this.user1.attachPermissions([this.permission3, this.permission2]);
 
-        var permission = yield model.getPermissions();
+        var permission = yield this.user1.getPermissions();
 
         expect(permission.length).to.equal(3);
       });
 
       it('should be able to accept a collection of models', function*() {
-        var collection = this.simpleOrm.collection.create([permission1, permission2]);
-        yield model.attachPermissions(collection);
+        var collection = this.simpleOrm.collection.create([this.permission3, this.permission2]);
+        yield this.user1.attachPermissions(collection);
 
-        var permission = yield model.getPermissions();
+        var permission = yield this.user1.getPermissions();
 
         expect(permission.length).to.equal(3);
       });
@@ -469,7 +446,7 @@ module.exports = function(dataLayerValues) {
         var errorThrow = '';
 
         try {
-          yield model.attachPermissions(1000000000);
+          yield this.user1.attachPermissions(1000000000);
         } catch(exception) {
           errorThrow = exception;
         }
@@ -482,7 +459,7 @@ module.exports = function(dataLayerValues) {
           var errorThrow = '';
 
           try {
-            yield model.attachPermissions({});
+            yield this.user1.attachPermissions({});
           } catch(exception) {
             errorThrow = exception;
           }
@@ -492,99 +469,69 @@ module.exports = function(dataLayerValues) {
     });
 
     describe('detach method', function() {
-      var model;
-      var permission1;
-      var permission2;
-
-      beforeEach(function*() {
-        var where = {};
-        where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-        model = yield this.dataLayer.user.find({
-          where: where
-        });
-
-        var where2 = {};
-        where2[this.dataLayer.user._model._primaryKeyColumns[0]] = 2;
-        permission1 = yield this.dataLayer.permission.find({
-          where: where2
-        });
-
-        var where3 = {};
-        where3[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-        permission2 = yield this.dataLayer.permission.find({
-          where: where3
-        });
-      });
-
       it('should be added to model when defining a hasMany relationship with through', function*() {
-        expect(_.isFunction(model.detachPermissions)).to.be.true;
+        expect(_.isFunction(this.user3.detachPermissions)).to.be.true;
       });
 
       it('should be able to accept a single primary key', function*() {
-        yield model.detachPermissions(2);
+        yield this.user3.detachPermissions(2);
 
-        var permission = yield model.getPermissions();
+        var permission = yield this.user3.getPermissions();
 
         expect(permission.length).to.equal(3);
       });
 
       it('should be able to accept an array of primary keys', function*() {
-        yield model.detachPermissions([2, 3]);
+        yield this.user3.detachPermissions([2, 3]);
 
-        var permission = yield model.getPermissions();
+        var permission = yield this.user3.getPermissions();
 
         expect(permission.length).to.equal(2);
       });
 
       it('should be able to accept a single model', function*() {
-        yield model.detachPermissions(permission1);
+        yield this.user3.detachPermissions(this.permission1);
 
-        var permission = yield model.getPermissions();
+        var permission = yield this.user3.getPermissions();
 
         expect(permission.length).to.equal(3);
       });
 
       it('should be able to accept an array of models', function*() {
-        yield model.detachPermissions([permission1, permission2]);
+        yield this.user3.detachPermissions([this.permission1, this.permission2]);
 
-        var permission = yield model.getPermissions();
+        var permission = yield this.user3.getPermissions();
 
         expect(permission.length).to.equal(2);
       });
 
       it('should be able to accept a collection of models', function*() {
-        var collection = this.simpleOrm.collection.create([permission1, permission2]);
-        yield model.detachPermissions(collection);
+        var collection = this.simpleOrm.collection.create([this.permission1, this.permission2]);
+        yield this.user3.detachPermissions(collection);
 
-        var permission = yield model.getPermissions();
+        var permission = yield this.user3.getPermissions();
 
         expect(permission.length).to.equal(2);
       });
 
       it('should not remove an models if invilad primary key is passed', function*() {
-        yield model.detachPermissions(1000000000);
+        yield this.user3.detachPermissions(1000000000);
 
-        var permission = yield model.getPermissions();
+        var permission = yield this.user3.getPermissions();
 
         expect(permission.length).to.equal(4);
       });
 
       it('should not remove an models if invalid object is passed', function*() {
-        yield model.detachPermissions({});
+        yield this.user3.detachPermissions({});
 
-        var permission = yield model.getPermissions();
+        var permission = yield this.user3.getPermissions();
 
         expect(permission.length).to.equal(4);
       });
     });
 
     it('should be able to define hasMany relationship with through model defining fields', function*() {
-      var where = {};
-      where[this.dataLayer.user2._model._primaryKeyColumns[0]] = 3;
-      var model = yield this.dataLayer.user2.find({
-        where: where
-      });
-
       //TODO: research: switch this to test for error but test error that are throw from a generator does not seem to be working and this functionality could
       //TODO: break while this test might still pass
       /*var err = "Error: ER_BAD_FIELD_ERROR: Unknown column 'UserPermissionMap.test' in 'on clause'";
@@ -593,7 +540,7 @@ module.exports = function(dataLayerValues) {
         yield model.getPermissions();
       }).to.throw(err);*/
 
-      var relationalModels = yield model.getPermissions();
+      var relationalModels = yield this.user3.getPermissions();
 
       expect(relationalModels.getByIndex(0).id).to.equal(1);
       expect(relationalModels.getByIndex(0).title).to.equal('user.create');
@@ -609,24 +556,13 @@ module.exports = function(dataLayerValues) {
     });
 
     it('should return null if a belongsTo does not link anyone (basically a "can belong to" type relationship)', function*() {
-      var where = {};
-      where[this.dataLayer.userDetail._model._primaryKeyColumns[0]] = 5;
-      var model = yield this.dataLayer.userDetail.find({
-        where: where
-      });
-
-      var relationalModel = yield model.getUser();
+      var relationalModel = yield this.userDetail5.getUser();
 
       expect(relationalModel).to.be.null;
     });
 
     it('should be able to convert to JSON with all relationship data', function*() {
-      var where = {};
-      where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-      var model = yield this.dataLayer.user.find({
-        where: where
-      });
-      expect(yield model.toJSONWithRelationships()).to.deep.equal({
+      expect(yield this.user1.toJSONWithRelationships()).to.deep.equal({
         id: 1,
         firstName: 'John',
         lastName: 'Doe',
@@ -664,12 +600,7 @@ module.exports = function(dataLayerValues) {
     });
 
     it('should be able to convert to JSON with specific relationship data', function*() {
-      var where = {};
-      where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-      var model = yield this.dataLayer.user.find({
-        where: where
-      });
-      expect(yield model.toJSONWithRelationships([
+      expect(yield this.user1.toJSONWithRelationships([
         'UserDetail',
         'TestUserEmailsTest1',
         'TestUserEmails'
@@ -704,12 +635,7 @@ module.exports = function(dataLayerValues) {
     });
 
     it('should be able to convert to JSON with 1 specific relationship data', function*() {
-      var where = {};
-      where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-      var model = yield this.dataLayer.user.find({
-        where: where
-      });
-      expect(yield model.toJSONWithRelationships([
+      expect(yield this.user1.toJSONWithRelationships([
         'UserDetail'
       ])).to.deep.equal({
         id: 1,
@@ -731,12 +657,7 @@ module.exports = function(dataLayerValues) {
     });
 
     it('should be able to convert to JSON with 1 specific relationship passed as string', function*() {
-      var where = {};
-      where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-      var model = yield this.dataLayer.user.find({
-        where: where
-      });
-      expect(yield model.toJSONWithRelationships('UserDetail')).to.deep.equal({
+      expect(yield this.user1.toJSONWithRelationships('UserDetail')).to.deep.equal({
         id: 1,
         firstName: 'John',
         lastName: 'Doe',
@@ -756,12 +677,7 @@ module.exports = function(dataLayerValues) {
     });
 
     it('should be able to convert to JSON with specific relationship data passed as multiple strings', function*() {
-      var where = {};
-      where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-      var model = yield this.dataLayer.user.find({
-        where: where
-      });
-      expect(yield model.toJSONWithRelationships('UserDetail', 'TestUserEmailsTest1', 'TestUserEmails')).to.deep.equal({
+      expect(yield this.user1.toJSONWithRelationships('UserDetail', 'TestUserEmailsTest1', 'TestUserEmails')).to.deep.equal({
         id: 1,
         firstName: 'John',
         lastName: 'Doe',
@@ -874,13 +790,7 @@ module.exports = function(dataLayerValues) {
     });
 
     it('should be able to get primary key data', function*() {
-      var where = {};
-      where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-      var model = yield this.dataLayer.user.find({
-        where: where
-      });
-
-      expect(model._getDataStorePrimaryKeyData()).to.deep.equal({
+      expect(this.user3._getDataStorePrimaryKeyData()).to.deep.equal({
         id: 3
       });
     });
@@ -1147,20 +1057,14 @@ module.exports = function(dataLayerValues) {
         it('single', function*() {
           var start = moment().format('X');
 
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.requirePasswordChangeFlag = true;
-          model.hook('beforeSave[test]', function(model, saveType) {
+          this.user3.requirePasswordChangeFlag = true;
+          this.user3.hook('beforeSave[test]', function(model, saveType) {
             expect(saveType).to.equal('update');
             model.firstName = 'before-' + model.firstName;
           });
-          yield model.save();
+          yield this.user3.save();
 
-          this.testUserValues(model, {
+          this.testUserValues(this.user3, {
             id: 3,
             firstName: 'before-John',
             lastName: 'Doe2',
@@ -1175,7 +1079,7 @@ module.exports = function(dataLayerValues) {
           });
 
           var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = model.id;
+          where[this.dataLayer.user._model._primaryKeyColumns[0]] = this.user3.id;
           var modelFromDatabase = yield this.dataLayer.user.find({
             where: where
           });
@@ -1197,44 +1101,33 @@ module.exports = function(dataLayerValues) {
         });
 
         it('should not allow other hooks to be called if the abort callback is executed', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-          model.firstName = 'test';
+          this.user3.firstName = 'test';
 
-          model.hook('beforeSave[test]', function(model, saveType, abort) {
+          this.user3.hook('beforeSave[test]', function(model, saveType, abort) {
             expect(saveType).to.equal('update');
             abort();
           });
 
           //this should never be called since the first hook calls the abort callback
-          model.hook('beforeSave[test2]', function(model, saveType, abort) {
+          this.user3.hook('beforeSave[test2]', function(model, saveType, abort) {
             expect(false).to.be.true;
           });
 
-          expect(yield model.save()).to.be.false;
+          expect(yield this.user3.save()).to.be.false;
         });
 
         it('should abort action if hook executes the abort callback', function*() {
           var start = moment().format('X');
 
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.requirePasswordChangeFlag = true;
-          model.hook('beforeSave[test]', function(model, saveType, abort) {
+          this.user3.requirePasswordChangeFlag = true;
+          this.user3.hook('beforeSave[test]', function(model, saveType, abort) {
             expect(saveType).to.equal('update');
             model.firstName = 'before-' + model.firstName;
             abort();
           });
-          expect(yield model.save()).to.be.false;
+          expect(yield this.user3.save()).to.be.false;
 
-          this.testUserValues(model, {
+          this.testUserValues(this.user3, {
             id: 3,
             firstName: 'before-John',
             lastName: 'Doe2',
@@ -1249,7 +1142,7 @@ module.exports = function(dataLayerValues) {
           });
 
           var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = model.id;
+          where[this.dataLayer.user._model._primaryKeyColumns[0]] = this.user3.id;
           var modelFromDatabase = yield this.dataLayer.user.find({
             where: where
           });
@@ -1272,19 +1165,13 @@ module.exports = function(dataLayerValues) {
         it('should allow hook to pass back a custom value if action is aborted', function*() {
           var start = moment().format('X');
 
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.requirePasswordChangeFlag = true;
-          model.hook('beforeSave[test]', function(model, saveType, abort) {
+          this.user3.requirePasswordChangeFlag = true;
+          this.user3.hook('beforeSave[test]', function(model, saveType, abort) {
             expect(saveType).to.equal('update');
             model.firstName = 'before-' + model.firstName;
             abort('test');
           });
-          expect(yield model.save()).to.equal('test');
+          expect(yield this.user3.save()).to.equal('test');
         });
       });
 
@@ -1292,20 +1179,14 @@ module.exports = function(dataLayerValues) {
         it('single', function*() {
           var start = moment().format('X');
 
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.requirePasswordChangeFlag = true;
-          model.hook('afterSave[test]', function(model, saveType) {
+          this.user3.requirePasswordChangeFlag = true;
+          this.user3.hook('afterSave[test]', function(model, saveType) {
             expect(saveType).to.equal('update');
             model.firstName = 'after-' + model.firstName;
           });
-          yield model.save();
+          yield this.user3.save();
 
-          this.testUserValues(model, {
+          this.testUserValues(this.user3, {
             id: 3,
             firstName: 'after-John',
             lastName: 'Doe2',
@@ -1320,7 +1201,7 @@ module.exports = function(dataLayerValues) {
           });
 
           var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = model.id;
+          where[this.dataLayer.user._model._primaryKeyColumns[0]] = this.user3.id;
           var modelFromDatabase = yield this.dataLayer.user.find({
             where: where
           });
@@ -1344,19 +1225,13 @@ module.exports = function(dataLayerValues) {
 
       describe('beforeRemove', function() {
         it('single', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('beforeRemove[test]', function(model) {
+          this.user3.hook('beforeRemove[test]', function(model) {
             expect(model.id).to.equal(3);
           });
-          expect(yield model.remove()).to.be.true;
+          expect(yield this.user3.remove()).to.be.true;
 
           var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
+          where[this.dataLayer.user._model._primaryKeyColumns[0]] = this.user3.id;
           var model = yield this.dataLayer.user.find({
             where: where
           });
@@ -1365,40 +1240,28 @@ module.exports = function(dataLayerValues) {
         });
 
         it('should not allow other hooks to be called if the abort callback is executed', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('beforeRemove[test]', function(model, abort) {
+          this.user3.hook('beforeRemove[test]', function(model, abort) {
             expect(model.id).to.equal(3);
             abort();
           });
 
-          model.hook('beforeRemove[test2]', function(model, abort) {
+          this.user3.hook('beforeRemove[test2]', function(model, abort) {
             expect(false).to.be.true;
           });
 
-          expect(yield model.remove()).to.be.false;
+          expect(yield this.user3.remove()).to.be.false;
         });
 
         it('should abort action if hook executes the abort callback', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('beforeRemove[test]', function(model, abort) {
+          this.user3.hook('beforeRemove[test]', function(model, abort) {
             expect(model.id).to.equal(3);
             abort();
           });
 
-          expect(yield model.remove()).to.be.false;
+          expect(yield this.user3.remove()).to.be.false;
 
           var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
+          where[this.dataLayer.user._model._primaryKeyColumns[0]] = this.user3.id;
           var model = yield this.dataLayer.user.find({
             where: where
           });
@@ -1407,36 +1270,24 @@ module.exports = function(dataLayerValues) {
         });
 
         it('should allow hook to pass back a custom value if action is aborted', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('beforeRemove[test]', function(model, abort) {
+          this.user3.hook('beforeRemove[test]', function(model, abort) {
             expect(model.id).to.equal(3);
             abort('before remove abort');
           });
 
-          expect(yield model.remove()).to.equal('before remove abort');
+          expect(yield this.user3.remove()).to.equal('before remove abort');
         });
       });
 
       describe('afterRemove', function() {
         it('single', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('afterRemove[test]', function(model) {
+          this.user3.hook('afterRemove[test]', function(model) {
             expect(model.id).to.equal(3);
           });
-          expect(yield model.remove()).to.be.true;
+          expect(yield this.user3.remove()).to.be.true;
 
           var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
+          where[this.dataLayer.user._model._primaryKeyColumns[0]] = this.user3.id;
           var model = yield this.dataLayer.user.find({
             where: where
           });
@@ -1447,86 +1298,58 @@ module.exports = function(dataLayerValues) {
 
       describe('beforeGetRelationship (belongsTo)', function() {
         it('single', function*() {
-          var where = {};
-          where[this.dataLayer.userDetail._model._primaryKeyColumns[0]] = 1;
-          var model = yield this.dataLayer.userDetail.find({
-            where: where
-          });
-          model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName) {
+          this.userDetail1.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName) {
             expect(relationshipType).to.equal('belongsTo');
             expect(relationshipModelName).to.equal('User');
           });
 
-          expect((yield model.getUser()).id).to.equal(1);
+          expect((yield this.userDetail1.getUser()).id).to.equal(1);
         });
 
         it('should not allow other hooks to be called if the abort callback is executed', function*() {
-          var where = {};
-          where[this.dataLayer.userDetail._model._primaryKeyColumns[0]] = 1;
-          var model = yield this.dataLayer.userDetail.find({
-            where: where
-          });
-
-          model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+          this.userDetail1.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
             expect(relationshipType).to.equal('belongsTo');
             expect(relationshipModelName).to.equal('User');
             abort();
           });
 
-          model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+          this.userDetail1.hook('beforeGetRelationship[test2]', function(model, relationshipType, relationshipModelName, abort) {
             expect(false).to.be.true;
           });
 
-          expect(yield model.getUser()).to.be.false;
+          expect(yield this.userDetail1.getUser()).to.be.false;
         });
 
         it('should abort action if hook executes the abort callback', function*() {
-          var where = {};
-          where[this.dataLayer.userDetail._model._primaryKeyColumns[0]] = 1;
-          var model = yield this.dataLayer.userDetail.find({
-            where: where
-          });
-
-          model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+          this.userDetail1.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
             expect(relationshipType).to.equal('belongsTo');
             expect(relationshipModelName).to.equal('User');
             abort();
           });
 
-          expect(yield model.getUser()).to.be.false;
+          expect(yield this.userDetail1.getUser()).to.be.false;
         });
 
         it('should allow hook to pass back a custom value if action is aborted', function*() {
-          var where = {};
-          where[this.dataLayer.userDetail._model._primaryKeyColumns[0]] = 1;
-          var model = yield this.dataLayer.userDetail.find({
-            where: where
-          });
-
-          model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+          this.userDetail1.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
             expect(relationshipType).to.equal('belongsTo');
             expect(relationshipModelName).to.equal('User');
             abort('before get relationship abort');
           });
 
-          expect(yield model.getUser()).to.equal('before get relationship abort');
+          expect(yield this.userDetail1.getUser()).to.equal('before get relationship abort');
         });
       });
 
       describe('afterGetRelationship (belongsTo)', function() {
         it('single', function*() {
-          var where = {};
-          where[this.dataLayer.userDetail._model._primaryKeyColumns[0]] = 1;
-          var model = yield this.dataLayer.userDetail.find({
-            where: where
-          });
-          model.hook('afterGetRelationship[test]', function(model, relationshipType, relationshipModelName, relationalModel) {
+          this.userDetail1.hook('afterGetRelationship[test]', function(model, relationshipType, relationshipModelName, relationalModel) {
             expect(relationshipType).to.equal('belongsTo');
             expect(relationshipModelName).to.equal('User');
             relationalModel.firstName = 'hook';
           });
 
-          var relationalModel = yield model.getUser();
+          var relationalModel = yield this.userDetail1.getUser();
 
           expect(relationalModel.firstName).to.equal('hook');
         });
@@ -1534,88 +1357,58 @@ module.exports = function(dataLayerValues) {
 
       describe('beforeGetRelationship (hasOne)', function() {
         it('single', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+          this.user1.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
             expect(relationshipType).to.equal('hasOne');
             expect(relationshipModelName).to.equal('UserDetail');
           });
 
-          expect((yield model.getUserDetail()).id).to.equal(1);
+          expect((yield this.user1.getUserDetail()).id).to.equal(1);
         });
 
         it('should not allow other hooks to be called if the abort callback is executed', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+          this.user1.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
             expect(relationshipType).to.equal('hasOne');
             expect(relationshipModelName).to.equal('UserDetail');
             abort();
           });
 
-          model.hook('beforeGetRelationship[test2]', function(model, relationshipType, relationshipModelName, abort) {
+          this.user1.hook('beforeGetRelationship[test2]', function(model, relationshipType, relationshipModelName, abort) {
             expect(false).to.be.true;
           });
 
-          expect(yield model.getUserDetail()).to.false;
+          expect(yield this.user1.getUserDetail()).to.false;
         });
 
         it('should abort action if hook executes the abort callback', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+          this.user1.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
             expect(relationshipType).to.equal('hasOne');
             expect(relationshipModelName).to.equal('UserDetail');
             abort();
           });
 
-          expect(yield model.getUserDetail()).to.be.false;
+          expect(yield this.user1.getUserDetail()).to.be.false;
         });
 
         it('should allow hook to pass back a custom value if action is aborted', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+          this.user1.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
             expect(relationshipType).to.equal('hasOne');
             expect(relationshipModelName).to.equal('UserDetail');
             abort('before get relationship abort');
           });
 
-          expect(yield model.getUserDetail()).to.equal('before get relationship abort');
+          expect(yield this.user1.getUserDetail()).to.equal('before get relationship abort');
         });
       });
 
       describe('afterGetRelationship (hasOne)', function() {
         it('single', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('afterGetRelationship[test]', function(model, relationshipType, relationshipModelName, relationalModel) {
+          this.user1.hook('afterGetRelationship[test]', function(model, relationshipType, relationshipModelName, relationalModel) {
             expect(relationshipType).to.equal('hasOne');
             expect(relationshipModelName).to.equal('UserDetail');
             relationalModel.details = 'hook';
           });
 
-          var relationalModel = yield model.getUserDetail();
+          var relationalModel = yield this.user1.getUserDetail();
 
           expect(relationalModel.details).to.equal('hook');
         });
@@ -1623,88 +1416,58 @@ module.exports = function(dataLayerValues) {
 
       describe('beforeGetRelationship (hasMany)', function() {
         it('single', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+          this.user1.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
             expect(relationshipType).to.equal('hasMany');
             expect(relationshipModelName).to.equal('UserEmail');
           });
 
-          expect((yield model.getTestUserEmails()).length).to.equal(2);
+          expect((yield this.user1.getTestUserEmails()).length).to.equal(2);
         });
 
         it('should not allow other hooks to be called if the abort callback is executed', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+          this.user1.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
             expect(relationshipType).to.equal('hasMany');
             expect(relationshipModelName).to.equal('UserEmail');
             abort();
           });
 
-          model.hook('beforeGetRelationship[test2]', function(model, relationshipType, relationshipModelName, abort) {
+          this.user1.hook('beforeGetRelationship[test2]', function(model, relationshipType, relationshipModelName, abort) {
             expect(false).to.be.true;
           });
 
-          expect(yield model.getTestUserEmails()).to.be.false;
+          expect(yield this.user1.getTestUserEmails()).to.be.false;
         });
 
         it('should abort action if hook executes the abort callback', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+          this.user1.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
             expect(relationshipType).to.equal('hasMany');
             expect(relationshipModelName).to.equal('UserEmail');
             abort();
           });
 
-          expect(yield model.getTestUserEmails()).to.be.false;
+          expect(yield this.user1.getTestUserEmails()).to.be.false;
         });
 
         it('should allow hook to pass back a custom value if action is aborted', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
+          this.user1.hook('beforeGetRelationship[test]', function(model, relationshipType, relationshipModelName, abort) {
             expect(relationshipType).to.equal('hasMany');
             expect(relationshipModelName).to.equal('UserEmail');
             abort('before get relationship abort');
           });
 
-          expect(yield model.getTestUserEmails()).to.equal('before get relationship abort');
+          expect(yield this.user1.getTestUserEmails()).to.equal('before get relationship abort');
         });
       });
 
       describe('afterGetRelationship (hasMany)', function() {
         it('single', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('afterGetRelationship[test]', function(model, relationshipType, relationshipModelName, relationalModels) {
+          this.user1.hook('afterGetRelationship[test]', function(model, relationshipType, relationshipModelName, relationalModels) {
             expect(relationshipType).to.equal('hasMany');
             expect(relationshipModelName).to.equal('UserEmail');
             relationalModels.getByIndex(0).email = 'hook';
           });
 
-          var relationalModels = yield model.getTestUserEmails();
+          var relationalModels = yield this.user1.getTestUserEmails();
 
           expect(relationalModels.getByIndex(0).email).to.equal('hook');
         });
@@ -1712,13 +1475,7 @@ module.exports = function(dataLayerValues) {
 
       describe('beforeDetach', function() {
         it('single with primary key', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('beforeDetach[test]', function(model, options, abort) {
+          this.user3.hook('beforeDetach[test]', function(model, options, abort) {
             expect(model.id).to.equal(3);
             expectedOptions = {
               criteria: {
@@ -1739,28 +1496,16 @@ module.exports = function(dataLayerValues) {
             ];
           });
 
-          yield model.detachPermissions(1);
-          var permissions = yield model.getPermissions();
+          yield this.user3.detachPermissions(1);
+          var permissions = yield this.user3.getPermissions();
 
           expect(permissions.length).to.equal(2);
           expect(permissions.getByIndex(0).id).to.equal(1);
           expect(permissions.getByIndex(1).id).to.equal(2);
         });
 
-        it('single with primary key', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          var where2 = {};
-          where2[this.dataLayer.permission._model._primaryKeyColumns[0]] = 1;
-          var permission = yield this.dataLayer.permission.find({
-            where: where2
-          });
-
-          model.hook('beforeDetach[test]', function(model, options, abort) {
+        it('single with model', function*() {
+          this.user3.hook('beforeDetach[test]', function(model, options, abort) {
             expect(model.id).to.equal(3);
             expectedOptions = {
               criteria: {
@@ -1781,8 +1526,8 @@ module.exports = function(dataLayerValues) {
             ];
           });
 
-          yield model.detachPermissions(permission);
-          var permissions = yield model.getPermissions();
+          yield this.user3.detachPermissions(this.permission1);
+          var permissions = yield this.user3.getPermissions();
 
           expect(permissions.length).to.equal(2);
           expect(permissions.getByIndex(0).id).to.equal(1);
@@ -1790,67 +1535,43 @@ module.exports = function(dataLayerValues) {
         });
 
         it('should not allow other hooks to be called if the abort callback is executed', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('beforeDetach[test]', function(model, options, abort) {
+          this.user3.hook('beforeDetach[test]', function(model, options, abort) {
             abort();
           });
 
-          model.hook('beforeDetach[test2]', function(model, options, abort) {
+          this.user3.hook('beforeDetach[test2]', function(model, options, abort) {
             expect(false).to.be.true;
           });
 
-          expect(yield model.detachPermissions(1)).to.be.false;
+          expect(yield this.user3.detachPermissions(1)).to.be.false;
         });
 
         it('should abort action if hook executes the abort callback', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('beforeDetach[test]', function(model, options, abort) {
+          this.user3.hook('beforeDetach[test]', function(model, options, abort) {
             abort()
           });
 
-          expect(yield model.detachPermissions(1)).to.be.false;
+          expect(yield this.user3.detachPermissions(1)).to.be.false;
         });
 
         it('should allow hook to pass back a custom value if action is aborted', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('beforeDetach[test]', function(model, options, abort) {
+          this.user3.hook('beforeDetach[test]', function(model, options, abort) {
             abort('before detach abort')
           });
 
-          expect(yield model.detachPermissions(1)).to.equal('before detach abort');
+          expect(yield this.user3.detachPermissions(1)).to.equal('before detach abort');
         });
       });
 
       describe('afterDetach', function() {
         it('single', function*() {
           var test = false;
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('afterDetach[test]', function(model) {
+          this.user3.hook('afterDetach[test]', function(model) {
             expect(model.id).to.equal(3);
             test = true;
           });
 
-          yield model.detachPermissions(1);
+          yield this.user3.detachPermissions(1);
 
           expect(test).to.be.true;
         });
@@ -1859,13 +1580,7 @@ module.exports = function(dataLayerValues) {
       describe('beforeAttach', function() {
         it('single with primary keys', function*() {
           var dataLayer = this.dataLayer;
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('beforeAttach[test]', function(model, options, abort) {
+          this.user1.hook('beforeAttach[test]', function(model, options, abort) {
             expect(model.id).to.equal(1);
             expectedOptions = {
               criteria: {
@@ -1885,8 +1600,8 @@ module.exports = function(dataLayerValues) {
             ];
           });
 
-          yield model.attachPermissions(2);
-          var permissions = yield model.getPermissions();
+          yield this.user1.attachPermissions(2);
+          var permissions = yield this.user1.getPermissions();
 
           expect(permissions.length).to.equal(3);
           expect(permissions.getByIndex(0).id).to.equal(1);
@@ -1896,19 +1611,7 @@ module.exports = function(dataLayerValues) {
 
         it('single with models', function*() {
           var dataLayer = this.dataLayer;
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          var where2 = {};
-          where2[this.dataLayer.permission._model._primaryKeyColumns[0]] = 2;
-          var permission = yield this.dataLayer.permission.find({
-            where: where2
-          });
-
-          model.hook('beforeAttach[test]', function(model, options, abort) {
+          this.user1.hook('beforeAttach[test]', function(model, options, abort) {
             expect(model.id).to.equal(1);
             expectedOptions = {
               criteria: {
@@ -1928,8 +1631,8 @@ module.exports = function(dataLayerValues) {
             ];
           });
 
-          yield model.attachPermissions(permission);
-          var permissions = yield model.getPermissions();
+          yield this.user1.attachPermissions(this.permission2);
+          var permissions = yield this.user1.getPermissions();
 
           expect(permissions.length).to.equal(3);
           expect(permissions.getByIndex(0).id).to.equal(1);
@@ -1938,67 +1641,43 @@ module.exports = function(dataLayerValues) {
         });
 
         it('should not allow other hooks to be called if the abort callback is executed', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('beforeAttach[test]', function(model, options, abort) {
+          this.user1.hook('beforeAttach[test]', function(model, options, abort) {
             abort();
           });
 
-          model.hook('beforeAttach[test]', function(model, options, abort) {
+          this.user1.hook('beforeAttach[test2]', function(model, options, abort) {
             expect(false).to.be.true;
           });
 
-          expect(yield model.attachPermissions(1)).to.be.false;
+          expect(yield this.user1.attachPermissions(1)).to.be.false;
         });
 
         it('should abort action if hook executes the abort callback', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('beforeAttach[test]', function(model, options, abort) {
+          this.user1.hook('beforeAttach[test]', function(model, options, abort) {
             abort();
           });
 
-          expect(yield model.attachPermissions(1)).to.be.false;
+          expect(yield this.user1.attachPermissions(1)).to.be.false;
         });
 
         it('should allow hook to pass back a custom value if action is aborted', function*() {
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('beforeAttach[test]', function(model, options, abort) {
+          this.user1.hook('beforeAttach[test]', function(model, options, abort) {
             abort('before attach abort');
           });
 
-          expect(yield model.attachPermissions(1)).to.equal('before attach abort');
+          expect(yield this.user1.attachPermissions(1)).to.equal('before attach abort');
         });
       });
 
       describe('afterAttach', function() {
         it('single', function*() {
           var test = false;
-          var where = {};
-          where[this.dataLayer.user._model._primaryKeyColumns[0]] = 1;
-          var model = yield this.dataLayer.user.find({
-            where: where
-          });
-
-          model.hook('afterAttach[test]', function(model) {
+          this.user1.hook('afterAttach[test]', function(model) {
             expect(model.id).to.equal(1);
             test = true;
           });
 
-          yield model.attachPermissions(2);
+          yield this.user1.attachPermissions(2);
 
           expect(test).to.be.true;
         });

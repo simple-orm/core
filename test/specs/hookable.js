@@ -90,6 +90,26 @@ describe('hookable', function() {
     });
   });
 
+  it('should be able to remove all hooks at once', function*() {
+    hookableTest.hook('test1[test]', function(data) {
+      data.test1 += 1;
+      data.test2 += 1;
+    });
+    hookableTest.hook('test1[test2]', function(data) {
+      data.test1 += 2;
+      data.test2 += 2;
+    });
+
+    hookableTest.removeAllHooks();
+
+    hookableTest.test1();
+
+    expect(myObject).to.deep.equal({
+      test1: 1,
+      test2: 2
+    });
+  });
+
   it('should run hooks in the order they were added', function*() {
     hookableTest.hook('test1[9]', function(data) {
       data.test1 += '1';
@@ -106,5 +126,14 @@ describe('hookable', function() {
       test1: '112',
       test2: '212'
     });
+  });
+
+  it('should throw an error if you attempt to attach a hook with the same identifier', function*() {
+    var err = "There is already a hooks for 'test1' with the identifier of 'test'";
+    hookableTest.hook('test1[test]', function(data) {});
+
+    expect(function() {
+      hookableTest.hook('test1[test]', function(data) {});
+    }).to.throw(err);
   });
 });

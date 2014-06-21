@@ -949,7 +949,7 @@ var user = yield dataLayer.user.find({
 });
 ```
 
-## Hook System
+## Hooks System
 
 Simple ORM comes with a hook system that allows you to execute code before and after certain internal methods happen.  You can apply multiple hook functions to the same hook and they are executed in the order they were added.  When adding a hook, you need to attach the hook using the `hook()` method of the model or repository:
 
@@ -963,6 +963,12 @@ The first parameter is the name of the hook with an identifier wrapped in bracke
 
 ```javascript
 model.removeHook('beforeSave[test]');
+```
+
+You can also remove all hooks by calling `removeAllHooks()`:
+
+```javascript
+model.removeAllHooks();
 ```
 
 The second parameter is the hook function to be executed.

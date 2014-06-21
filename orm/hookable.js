@@ -1,3 +1,5 @@
+var _ = require('lodash');
+
 var getHookParts = function(hookName) {
   var hookNameParts = hookName.split('[');
 
@@ -25,6 +27,10 @@ module.exports = {
       this._hooks[hookParts.name] = {};
     }
 
+    if(_.isFunction(this._hooks[hookParts.name][hookParts.identifier])) {
+      throw new Error("There is already a hooks for '" + hookParts.name + "' with the identifier of '" + hookParts.identifier + "'")
+    }
+
     this._hooks[hookParts.name][hookParts.identifier] = hookFunction;
 
     if(this._emitter) {
@@ -43,5 +49,15 @@ module.exports = {
 
       delete this._hooks[hookParts.name][hookParts.identifier];
     }
+  },
+
+  removeAllHooks: function() {
+    _.forEach(this._hooks, function(hooks, hookName) {
+      _.forEach(hooks, function(hook, hookIdentifier) {
+        this.removeHook(hookName + '[' + hookIdentifier + ']');
+      }, this);
+    }, this);
+
+    this._hooks = {};
   }
 };
