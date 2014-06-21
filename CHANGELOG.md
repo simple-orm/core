@@ -3,6 +3,14 @@ If a change is prefixed with one or more of these, it has special mean:
 - [internal]: a change was made to the internal API (anythign with a leading underscore)
 - [breaking change]: a breaking change was made
 
+# master
+
+- [breaking change] a bunch of API have been changes, see documentation for what the APIs are
+- transaction support
+- restructure of unit/integration tests
+- added data adapter manager
+- added data layer helper
+
 # 0.6.0
 - [internal] [breaking change] `_getPrimaryKeyData()` was change to `_getDataStorePrimaryKeyData()`
 - [internal] [breaking change] remove model's `_primaryKeys` property (replaced with `_primaryKeyColumns` and `_primaryKeyProperties`)
