@@ -181,6 +181,94 @@ yield user.attachPermissions(createUserPermission);
 yield user.detachPermissions(createUserPermission);
 ```
 
+## Transactions
+
+If transactions are supported by the data adapter you are using, you will use the following data adapter methods to interact with transactions:
+
+- `startTransaction()`
+- `commitTransaction()`
+- `rollbackTransaction()`
+
+So using transactions is just as simple as using these commands, lets take a look at a simple example:
+
+```javascript
+yield dataAdapter.startTransaction();
+
+try {
+  yield dataLayerInstance.user.remove();
+  yield dataAdapter.commitTransaction();
+} catch (exception) {
+  yield dataAdapter.rollbackTransaction();
+  //error handling code
+}
+```
+
+Now if the application is like a web server, in order to properly use transactions you will need to make sure each request that requires a transaction is using it own connection.  Best way to do that is to pool data store connections (I have this simple [mysql-pool-connection-manager](https://github.com/simple-orm/mysql-pool-connection-manager) for working with mysql pools with promises).  For each request that requires a transaction, you just create a new instance of the layer use it own connection.
+
+```javascript
+simpleOrm.dataAdapterManager.createInstance(
+  uniqueConnectionIdentifier,
+  require('simple-orm-mysql-adapter'),
+
+  //this connection will only be used by this request can only be reused after this connection is done with it
+  yield require('mysql-pool-connection-manager').getConnection()
+);
+```
+
+## Plugin System
+
+The plugin system is very simple and designed as a convenience feature.
+
+Both models and repository have a method called `plugin()`.  This has 2 parameters, the first is the plugin function and the second are options for the plugin if they are needed.  Plugins can add functionlity in 2 way, directly extending the object and added a hook (or sometimes both).
+
+Within the plugin function, the `this` keywords will reference the object that called `.plugin()`, so for example:
+
+```javascript
+model.plugin(function() {
+  //this === userModel
+});
+```
+
+Within the plugin function, the first way to add functionality is by directly extending the object:
+
+```javascript
+model.plugin(function() {
+  this.doSomething = function() {
+    //whatever this function needs to do
+  }
+});
+```
+
+Now all instances of the user model will have the `doSomething()` method.
+
+The second way is to use the hook system which is details above:
+
+```javascript
+model.plugin(function() {
+  this.hook('beforeSave[doSomething]', function(model, saveType, abort) {
+    //whatever this hook needs to do
+  }
+});
+```
+
+Plugins call also be applied to specific model instances.
+
+Take a look at the plugins below for examples of the structure of plugins.
+
+## Plugins
+
+These are the following available plugins:
+
+### Official
+
+- [Find By Primary Key](https://github.com/simple-orm/find-by-primary-key) - Add support for just passing a single valued primary key to the repository's `find()` method.
+- [Validate](https://github.com/simple-orm/validate) - Adds data validation to models.
+- [Relationship Memory Cache](https://github.com/simple-orm/relationship-memory-cache) - Cache relationship data per model in memory
+
+### Others
+
+N/A
+
 ## API
 
 ### Simple Orm
@@ -308,7 +396,11 @@ In order to use transactions you are going to have to have multiple data adapter
 This will create a new data adapter instance that can be retrieved later for use.
 
 ```javascript
-simpleOrm.dataAdapterManager.createInstance('instace1', require('simple-orm-mysql-adapter'), yield require('mysql-pool-connection-manager').getConnection());
+simpleOrm.dataAdapterManager.createInstance(
+  'instace1',
+  require('simple-orm-mysql-adapter'),
+  yield require('mysql-pool-connection-manager').getConnection()
+);
 ```
 
 #### getInstance(instanceName)
@@ -1097,60 +1189,6 @@ The following hooks are supported:
 - `model`: The model that is being returned
 
 Hooks call also be applied to specific model instances.
-
-## Plugin System
-
-The plugin system is very simple and designed as a convenience feature.
-
-Both models and repository have a method called `plugin()`.  This has 2 parameters, the first is the plugin function and the second are options for the plugin if they are needed.  Plugins can add functionlity in 2 way, directly extending the object and added a hook (or sometimes both).
-
-Within the plugin function, the `this` keywords will reference the object that called `.plugin()`, so for example:
-
-```javascript
-model.plugin(function() {
-  //this === userModel
-});
-```
-
-Within the plugin function, the first way to add functionality is by directly extending the object:
-
-```javascript
-model.plugin(function() {
-  this.doSomething = function() {
-    //whatever this function needs to do
-  }
-});
-```
-
-Now all instances of the user model will have the `doSomething()` method.
-
-The second way is to use the hook system which is details above:
-
-```javascript
-model.plugin(function() {
-  this.hook('beforeSave[doSomething]', function(model, saveType, abort) {
-    //whatever this hook needs to do
-  }
-});
-```
-
-Plugins call also be applied to specific model instances.
-
-Take a look at the plugins below for examples of the structure of plugins.
-
-## Plugins
-
-These are the following available plugins:
-
-### Official
-
-- [Find By Primary Key](https://github.com/simple-orm/find-by-primary-key) - Add support for just passing a single valued primary key to the repository's `find()` method.
-- [Validate](https://github.com/simple-orm/validate) - Adds data validation to models.
-- [Relationship Memory Cache](https://github.com/simple-orm/relationship-memory-cache) - Cache relationship data per model in memory
-
-### Others
-
-N/A
 
 # LICENSE
 
