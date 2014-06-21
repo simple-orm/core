@@ -192,6 +192,26 @@ module.exports = function() {
       }]);
     });
 
+    it('should be able to convert to JSON with options', function*() {
+      this.collection.add([
+        this.model1,
+        this.model2
+      ]);
+
+      expect(this.collection.toJSON({
+        properties: [
+          'firstName',
+          'lastName'
+        ]
+      })).to.deep.equal([{
+        firstName: "John",
+        lastName: "Doe"
+      }, {
+        firstName: "Jane",
+        lastName: "Doe",
+      }]);
+    });
+
     it('should return null when convert empty collection to JSON', function*() {
       expect(this.collection.toJSON()).to.be.null;
     });

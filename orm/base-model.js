@@ -158,11 +158,13 @@ module.exports = function() {
       return defer.promise;
     },
 
-    toJSON: function() {
+    toJSON: function(options) {
+      options = options || {};
       var json = {};
+      var properties = options.properties || Object.keys(this._schema);
 
       _.forEach(this._schema, function(value, key) {
-        if(value.excludeJson !== true) {
+        if(value.excludeJson !== true && properties.indexOf(key) !== -1) {
           json[key] = this[key];
         }
       }, this);

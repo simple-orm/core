@@ -74,14 +74,14 @@ collection.clear = function() {
   this._data = [];
 };
 
-collection.toJSON = function() {
+collection.toJSON = function(options) {
   var json = null;
 
   if(this._data.length > 0) {
     json = [];
 
     this._data.forEach(function(value, key) {
-      json.push(value.toJSON());
+      json.push(value.toJSON(options));
     });
   }
 

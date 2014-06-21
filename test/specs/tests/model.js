@@ -847,6 +847,32 @@ module.exports = function(dataLayerValues) {
       });
     });
 
+    it('should be able to define the fields for JSON conversion', function*() {
+      var model = this.dataLayer.user.create({
+        firstName: 'test',
+        lastName: 'user',
+        email: 'test.user@example.com',
+        username: 'test.user',
+        password: 'password',
+        updatedTimestamp: null,
+        lastPasswordChangeDate: null,
+        requirePasswordChangeFlag: false,
+        status: 'registered'
+      });
+
+      expect(model.toJSON({
+        properties: [
+          'firstName',
+          'lastName',
+          'updatedTimestamp'
+        ]
+      })).to.deep.equal({
+        firstName: 'test',
+        lastName: 'user',
+        updatedTimestamp: null
+      });
+    });
+
     it('should be able to get primary key data', function*() {
       var where = {};
       where[this.dataLayer.user._model._primaryKeyColumns[0]] = 3;

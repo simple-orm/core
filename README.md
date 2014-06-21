@@ -386,7 +386,9 @@ Returns the model matching the passed index.
 collection.getByIndex(0);
 ```
 
-#### toJSON()
+#### toJSON(options)
+
+- `*options (object)`: Object of options for the to JSON conversion that is passed to the model's `toJSON()` method
 
 The same thing as the model's `toJSON()` method except does it on all models in the collection.
 
@@ -521,7 +523,10 @@ user.firstName = 'test';
 user.reset();
 ```
 
-#### toJSON()
+#### toJSON(options)
+
+- `*options (object)`: Object of options for the to JSON conversion, you can have the following:
+ - `properties ([string])`: An array of properties that you want converted
 
 This will convert the model to JSON.
 
@@ -533,6 +538,13 @@ var user = yield dataLayer.user.find({
 });
 
 var userJson = user.toJSON();
+
+var userJson = user.toJSON({
+  properties: [
+    'firstName',
+    'lastName'
+  ]
+})
 ```
 
 #### toJSONWithRelationships(relationships)
