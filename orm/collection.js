@@ -18,6 +18,10 @@ var buildFindObject = function(value) {
 };
 
 collection.add = function(models) {
+  if(_.isFunction(models.toArray)) {
+    models = models.toArray();
+  }
+
   if(!_.isArray(models)) {
     models = [models];
   }

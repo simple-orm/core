@@ -323,7 +323,7 @@ Collections are use to make managing an array of models easier.
 
 #### add(models)
 
-- `models (object|[object])`: One or an array of models to add
+- `models (object|[object])`: One or an array of models or a collection to add
 
 Adds one or more models that are passed.  The parameter can be a single model or an array of models.
 
@@ -334,6 +334,12 @@ collection.add([
   model1,
   model2
 ]);
+
+collection.add(yield dataAdapter.user.findAll({
+  where: {
+    age: 35
+  }
+}));
 ```
 
 #### remove(models)

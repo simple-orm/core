@@ -40,6 +40,15 @@ module.exports = function() {
       expect(this.collection.length).to.equal(2);
     });
 
+    it('should be able to add a collection', function*() {
+      this.collection.add(this.simpleOrm.collection.create([
+        this.model1,
+        this.model2
+      ]));
+
+      expect(this.collection.length).to.equal(2);
+    });
+
     it('should be able to remove a single model', function*() {
       this.collection.add([
         this.model1,

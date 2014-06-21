@@ -5,6 +5,7 @@ If a change is prefixed with one or more of these, it has special mean:
 
 # master
 
+- collection's `add()` method can now take a collection [#31]
 - added options parameter to collection's `toJSON()` method that is passed when calling `toJSON()` on the models in the collection [#28]
 - added options parameter to model's `toJSON()` method and now you can define the properties you want converted [#28]
 - added documentation for model's `reset()` method [#29]
