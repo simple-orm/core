@@ -24,170 +24,183 @@ interfaceChecker.define('SimpleOrmDataAdapter', [
    'getAll',
    'runQuery'*/
 ]);
+var validateDataAdapterInterface = function(dataAdapter) {
+  var interfaceCheck = interfaceChecker.has(dataAdapter, 'SimpleOrmDataAdapter');
 
-module.exports = function(model) {
-  var validateDataAdapterInterface = function(dataAdapter) {
-    var interfaceCheck = interfaceChecker.has(dataAdapter, 'SimpleOrmDataAdapter');
+  if(interfaceCheck !== true) {
+    var errorMessage = "The passed in data adapter has the following issue:";
 
-    if(interfaceCheck !== true) {
-      var errorMessage = "The passed in data adapter has the following issue:";
-
-      if(interfaceCheck.missingMethods) {
-        interfaceCheck.missingMethods.forEach(function(value) {
-          errorMessage += "\nMissing {0} method".format(value);
-        });
-      }
-
-      if(interfaceCheck.missingProperties) {
-        interfaceCheck.missingProperties.forEach(function(value) {
-          errorMessage += "\nMissing {0} property".format(value);
-        });
-      }
-
-      if(interfaceCheck.parameterMismatch) {
-        interfaceCheck.parameterMismatch.forEach(function(value) {
-          errorMessage += "\n" + value;
-        });
-      }
-
-      if(interfaceCheck.invalidType) {
-        _.forEach(interfaceCheck.invalidType, function(expectedPropertyType, propertyName) {
-          errorMessage += "\nExpected {0} to be a {1}".format(propertyName, expectedPropertyType);
-        });
-      }
-
-      throw new Error(errorMessage);
+    if(interfaceCheck.missingMethods) {
+      interfaceCheck.missingMethods.forEach(function(value) {
+        errorMessage += "\nMissing {0} method".format(value);
+      });
     }
-  };
 
-  var baseRepository = Object.create(hookable);
+    if(interfaceCheck.missingProperties) {
+      interfaceCheck.missingProperties.forEach(function(value) {
+        errorMessage += "\nMissing {0} property".format(value);
+      });
+    }
 
-  _.extend(baseRepository, {
-    _emitter: new EventEmitter(),
-    _hooks: {},
-    _model: model,
-    _dataAdapter: null,
+    if(interfaceCheck.parameterMismatch) {
+      interfaceCheck.parameterMismatch.forEach(function(value) {
+        errorMessage += "\n" + value;
+      });
+    }
 
-    setDataAdapter: function(dataAdapter) {
-      validateDataAdapterInterface(dataAdapter);
-      this._dataAdapter = dataAdapter;
-    },
+    if(interfaceCheck.invalidType) {
+      _.forEach(interfaceCheck.invalidType, function(expectedPropertyType, propertyName) {
+        errorMessage += "\nExpected {0} to be a {1}".format(propertyName, expectedPropertyType);
+      });
+    }
 
-    create: function(data, status) {
-      status = status || 'new';
-      data = data || {};
-      var returnObject = Object.create(model);
-      returnObject._status = status;
-      returnObject.init(data, this._dataAdapter);
-      return returnObject;
-    },
+    throw new Error(errorMessage);
+  }
+};
+var globalPlugins = {};
 
-    find: function(criteria) {
-      var defer = bluebird.defer();
-      var abort = false;
-      var abortValue = false;
-      //making this object in order to allow the beforeFind hook to be able to easily modify the criteria data
-      var options = {
-        criteria: criteria
-      };
+module.exports = {
+  create: function(model) {
+    var baseRepository = Object.create(hookable);
 
-      try {
-        this.runHooks('beforeFind', [this, options, function(returnValue) {
-          abort = true;
+    _.extend(baseRepository, {
+      _emitter: new EventEmitter(),
+      _hooks: {},
+      _model: model,
+      _dataAdapter: null,
 
-          if(returnValue) {
-            abortValue = returnValue;
-          }
+      setDataAdapter: function(dataAdapter) {
+        validateDataAdapterInterface(dataAdapter);
+        this._dataAdapter = dataAdapter;
+      },
 
-          throw 'error to prevent other hooks from executing';
-        }]);
+      create: function(data, status) {
+        status = status || 'new';
+        data = data || {};
+        var returnObject = Object.create(model);
+        returnObject._status = status;
+        returnObject.init(data, this._dataAdapter);
+        return returnObject;
+      },
 
-        if(abort === false) {
-          this._dataAdapter.find(model, options.criteria).then((function(results) {
-            var returnObject;
+      find: function(criteria) {
+        var defer = bluebird.defer();
+        var abort = false;
+        var abortValue = false;
+        //making this object in order to allow the beforeFind hook to be able to easily modify the criteria data
+        var options = {
+          criteria: criteria
+        };
 
-            if(!results) {
-              returnObject = null
-            } else {
-              returnObject = this.create(results, 'loaded');
+        try {
+          this.runHooks('beforeFind', [this, options, function(returnValue) {
+            abort = true;
+
+            if(returnValue) {
+              abortValue = returnValue;
             }
 
-            this.runHooks('afterFind', [this, returnObject]);
-            defer.resolve(returnObject);
-          }).bind(this), function(error) {
-            defer.reject(error);
-          });
-        }
-      } catch(exception) {
-        //any other execption needs to bubble up, this exception is expected
-        if(exception !== 'error to prevent other hooks from executing') {
-          throw exception;
-        }
-      }
+            throw 'error to prevent other hooks from executing';
+          }]);
 
-      if(abort === true) {
-        defer.resolve(abortValue);
-      }
+          if(abort === false) {
+            this._dataAdapter.find(model, options.criteria).then((function(results) {
+              var returnObject;
 
-      return defer.promise;
-    },
+              if(!results) {
+                returnObject = null
+              } else {
+                returnObject = this.create(results, 'loaded');
+              }
 
-    findAll: function(criteria) {
-      var defer = bluebird.defer();
-      var abort = false;
-      var abortValue = false;
-      //making this object in order to allow the beforeFindAll hook to be able to easily modify the criteria data
-      var options = {
-        criteria: criteria
-      };
-
-      try {
-        this.runHooks('beforeFindAll', [this, options, function(returnValue) {
-          abort = true;
-
-          if(returnValue) {
-            abortValue = returnValue;
+              this.runHooks('afterFind', [this, returnObject]);
+              defer.resolve(returnObject);
+            }).bind(this), function(error) {
+              defer.reject(error);
+            });
           }
+        } catch(exception) {
+          //any other execption needs to bubble up, this exception is expected
+          if(exception !== 'error to prevent other hooks from executing') {
+            throw exception;
+          }
+        }
 
-          throw 'error to prevent other hooks from executing';
-        }]);
+        if(abort === true) {
+          defer.resolve(abortValue);
+        }
 
-        if(abort === false) {
-          this._dataAdapter.findAll(model, options.criteria, this.create).then((function(results) {
-            var collection = collectionFactory();
+        return defer.promise;
+      },
 
-            if(results.length > 0) {
-              _.forEach(results, function(row) {
-                collection.add(this.create(row, 'loaded'));
-              }, this);
+      findAll: function(criteria) {
+        var defer = bluebird.defer();
+        var abort = false;
+        var abortValue = false;
+        //making this object in order to allow the beforeFindAll hook to be able to easily modify the criteria data
+        var options = {
+          criteria: criteria
+        };
+
+        try {
+          this.runHooks('beforeFindAll', [this, options, function(returnValue) {
+            abort = true;
+
+            if(returnValue) {
+              abortValue = returnValue;
             }
 
-            this.runHooks('afterFindAll', [this, collection]);
-            defer.resolve(collection);
-          }).bind(this), function(error) {
-            defer.reject(error);
-          });
+            throw 'error to prevent other hooks from executing';
+          }]);
+
+          if(abort === false) {
+            this._dataAdapter.findAll(model, options.criteria, this.create).then((function(results) {
+              var collection = collectionFactory();
+
+              if(results.length > 0) {
+                _.forEach(results, function(row) {
+                  collection.add(this.create(row, 'loaded'));
+                }, this);
+              }
+
+              this.runHooks('afterFindAll', [this, collection]);
+              defer.resolve(collection);
+            }).bind(this), function(error) {
+              defer.reject(error);
+            });
+          }
+        } catch(exception) {
+          //any other execption needs to bubble up, this exception is expected
+          if(exception !== 'error to prevent other hooks from executing') {
+            throw exception;
+          }
         }
-      } catch(exception) {
-        //any other execption needs to bubble up, this exception is expected
-        if(exception !== 'error to prevent other hooks from executing') {
-          throw exception;
+
+        if(abort === true) {
+          defer.resolve(abortValue);
+        }
+
+        return defer.promise;
+      },
+
+      plugin: function(pluginFunction, options) {
+        if(_.isFunction(pluginFunction)) {
+          pluginFunction.apply(this, [options]);
         }
       }
+    });
 
-      if(abort === true) {
-        defer.resolve(abortValue);
-      }
+    _.forEach(globalPlugins, function(plugin) {
+      baseRepository.plugin(plugin.func, plugin.options);
+    });
 
-      return defer.promise;
-    },
+    return baseRepository;
+  },
 
-    plugin: function(pluginFunction, options) {
-      if(_.isFunction(pluginFunction)) {
-        pluginFunction.apply(this, [options]);
-      }
-    }
-  });
-
-  return baseRepository;
+  globalPlugin: function(pluginName, pluginFunction, options) {
+    globalPlugins[pluginName] = {
+      func: pluginFunction,
+      options: options
+    };
+  }
 };

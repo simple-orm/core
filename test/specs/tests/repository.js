@@ -169,6 +169,12 @@ module.exports = function(userIdField, userEmailUserIdField) {
     });
   });
 
+  describe('utilities', function() {
+    it('should be able to attach a plugin globally', function*() {
+      expect(this.dataLayer.user.gp()).to.equal('this is a global repository plugin');
+    });
+  });
+
   describe('hooks', function() {
     beforeEach(function() {
       this.dataLayer.user.removeHook('beforeFind[test]');

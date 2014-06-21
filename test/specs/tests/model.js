@@ -962,6 +962,12 @@ module.exports = function(dataLayerValues) {
         status: 'registered'
       });
     });
+
+    it('should be able to attach a plugin globally', function*() {
+      var user = this.dataLayer.user.create();
+
+      expect(user.gp()).to.equal('this is a global model plugin');
+    });
   });
 
   describe('hooks', function() {

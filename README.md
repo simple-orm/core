@@ -216,6 +216,18 @@ Returns a new model object (which is **not** the same thing as a model instance)
 var model = simpleOrm.baseModel.create();
 ```
 
+#### baseModel.globalPlugin(pluginName, pluginFunction, options)
+
+- `pluginName (string)`: String used in hash of global plugins that are stored
+- `pluginFunction (function)`: The plugin's function
+- `*options (object)`: The plugin's options
+
+This adds a global plugin that all objects created with `baseModel.create()` with have applied to them.  Any object created before the global plugin is added will **not** have the plugin attached.
+
+```javascript
+simpleOrm.baseModel.globalPlugin('validate', require('simple-orm-validate'), vaidateOptions);
+```
+
 #### baseRepository.create(model)
 
 - `model`: The model this repository is tied to
@@ -224,6 +236,18 @@ Returns a new repository object.
 
 ```javascript
 var repository = simpleOrm.baseRepository.create(model);
+```
+
+#### baseRepository.globalPlugin(pluginName, pluginFunction, options)
+
+- `pluginName (string)`: String used in hash of global plugins that are stored
+- `pluginFunction (function)`: The plugin's function
+- `*options (object)`: The plugin's options
+
+This adds a global plugin that all objects created with `baseRepository.create()` with have applied to them.  Any object created before the global plugin is added will **not** have the plugin attached.
+
+```javascript
+simpleOrm.baseRepository.globalPlugin('validate', require('simple-orm-find-by-primary-key'), vaidateOptions);
 ```
 
 #### dataAdapterManager

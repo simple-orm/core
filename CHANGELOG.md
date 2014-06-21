@@ -5,6 +5,7 @@ If a change is prefixed with one or more of these, it has special mean:
 
 # master
 
+- added ability to attach plugins to core model and repository base objects [#30]
 - refactored collection
 - collection's `add()` method can now take a collection [#31]
 - added options parameter to collection's `toJSON()` method that is passed when calling `toJSON()` on the models in the collection [#28]

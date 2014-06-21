@@ -8,6 +8,17 @@ var mysqlConnectionSpy;
 
 chai.use(sinonChai);
 
+require('../../orm/index').baseModel.globalPlugin('test', function() {
+  this.gp = function() {
+    return 'this is a global model plugin';
+  }
+});
+require('../../orm/index').baseRepository.globalPlugin('test', function() {
+  this.gp = function() {
+    return 'this is a global repository plugin';
+  }
+});
+
 describe('', function() {
   before(function*() {
     dataAdapterManager.createInstance('instance1', require('simple-orm-mysql-adapter'), yield require('../mysql-connection-manager').getConnection());
