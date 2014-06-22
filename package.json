@@ -1,6 +1,6 @@
 {
   "name": "simple-orm",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "A simple orm for NodeJS",
   "keywords": [
     "orm",

@@ -3,7 +3,7 @@ If a change is prefixed with one or more of these, it has special mean:
 - [internal]: a change was made to the internal API (anythign with a leading underscore)
 - [breaking change]: a breaking change was made
 
-# master
+# 0.7.0
 
 - refactored mocha tests [#23]
 - added `removeAllHooks()` method to hookable object
