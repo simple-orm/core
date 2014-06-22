@@ -1,7 +1,5 @@
 # Simple ORM
 
-This documentation can also be found [here](http://www.ryanzec.com/project-simple-orm).
-
 Change log can be found [here](https://github.com/simple-orm/core/blob/master/CHANGELOG.md);
 
 FAQ can be found [here](https://github.com/simple-orm/core/wiki).
